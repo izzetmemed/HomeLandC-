@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.AccessingDbRent.Abstract
 {
-    internal interface IAccessCustomer : IBaseRepository<SecondStepCustomer>, IBaseRepositoryGetAll<SecondStepCustomer>, IBaseRepositoryDeleteList
+    internal interface IAccessCustomer : IBaseRepository<SecondStepCustomer>, IBaseRepositoryGetAll<SecondStepCustomer>, IBaseRepositoryDeleteList, IBaserepositoryGetByİdList<SecondStepCustomer>
     {
     }
 }

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 using Model.Models;
+
 namespace Model.Contexts
 {
     public partial class MyDbContext : DbContext
@@ -23,7 +23,7 @@ namespace Model.Contexts
         public virtual DbSet<ObyektSecondStepCustomer> ObyektSecondStepCustomers { get; set; } = null!;
         public virtual DbSet<RentHome> RentHomes { get; set; } = null!;
         public virtual DbSet<SecondStepCustomer> SecondStepCustomers { get; set; } = null!;
-        public virtual DbSet<Sell> Sells { get; set; } = null!;      
+        public virtual DbSet<Sell> Sells { get; set; } = null!;
         public virtual DbSet<SellImg> SellImgs { get; set; } = null!;
         public virtual DbSet<SellSecondStepCustomer> SellSecondStepCustomers { get; set; } = null!;
 
@@ -31,13 +31,8 @@ namespace Model.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
-                IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-            .Build();
-
-
-                optionsBuilder.UseSqlServer(configuration["Password:DbContext"]);
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=HomeLand;Integrated Security=True;TrustServerCertificate=True");
             }
         }
 
@@ -46,7 +41,7 @@ namespace Model.Contexts
             modelBuilder.Entity<ImgName>(entity =>
             {
                 entity.HasKey(e => e.ImgId)
-                    .HasName("PK__ImgName__352F54F31F4E6D60");
+                    .HasName("PK__ImgName__352F54F34756F032");
 
                 entity.ToTable("ImgName");
 
@@ -57,7 +52,7 @@ namespace Model.Contexts
                 entity.HasOne(d => d.ImgIdForeign)
                     .WithMany(p => p.ImgNames)
                     .HasForeignKey(d => d.ImgIdForeignId)
-                    .HasConstraintName("FK__ImgName__ImgIdFo__534D60F1");
+                    .HasConstraintName("FK__ImgName__ImgIdFo__3D2915A8");
             });
 
             modelBuilder.Entity<Obyekt>(entity =>
@@ -75,6 +70,8 @@ namespace Model.Contexts
                 entity.Property(e => e.Date)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Document).HasMaxLength(50);
 
                 entity.Property(e => e.Fullname).HasMaxLength(50);
 
@@ -104,7 +101,7 @@ namespace Model.Contexts
             modelBuilder.Entity<ObyektImg>(entity =>
             {
                 entity.HasKey(e => e.ImgId)
-                    .HasName("PK__obyektIm__352F54F3E27873D2");
+                    .HasName("PK__obyektIm__352F54F3279336F7");
 
                 entity.ToTable("obyektImg");
 
@@ -115,13 +112,13 @@ namespace Model.Contexts
                 entity.HasOne(d => d.ImgIdForeign)
                     .WithMany(p => p.ObyektImgs)
                     .HasForeignKey(d => d.ImgIdForeignId)
-                    .HasConstraintName("FK__obyektImg__ImgId__75A278F5");
+                    .HasConstraintName("FK__obyektImg__ImgId__4F47C5E3");
             });
 
             modelBuilder.Entity<ObyektSecondStepCustomer>(entity =>
             {
                 entity.HasKey(e => e.SecondStepCustomerId)
-                    .HasName("PK__ObyektSe__735994EFA9966745");
+                    .HasName("PK__ObyektSe__735994EFC2056489");
 
                 entity.ToTable("ObyektSecondStepCustomer");
 
@@ -136,7 +133,7 @@ namespace Model.Contexts
                 entity.HasOne(d => d.SecondStepCustomerForeign)
                     .WithMany(p => p.ObyektSecondStepCustomers)
                     .HasForeignKey(d => d.SecondStepCustomerForeignId)
-                    .HasConstraintName("FK__ObyektSec__Secon__787EE5A0");
+                    .HasConstraintName("FK__ObyektSec__Secon__5224328E");
             });
 
             modelBuilder.Entity<RentHome>(entity =>
@@ -147,7 +144,17 @@ namespace Model.Contexts
 
                 entity.Property(e => e.Address).HasMaxLength(50);
 
+                entity.Property(e => e.AirConditioning).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Bed).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Boy).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Building).HasMaxLength(50);
+
+                entity.Property(e => e.CentralHeating).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Combi).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CoordinateX).HasMaxLength(50);
 
@@ -157,9 +164,15 @@ namespace Model.Contexts
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.Family).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Floor).HasMaxLength(50);
 
                 entity.Property(e => e.Fullname).HasMaxLength(50);
+
+                entity.Property(e => e.GasHeating).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Girl).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.IsCalledWithCustomerFirstStep).HasDefaultValueSql("((0))");
 
@@ -179,6 +192,20 @@ namespace Model.Contexts
 
                 entity.Property(e => e.Repair).HasMaxLength(50);
 
+                entity.Property(e => e.Sofa).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TableChair).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Tv).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Wardrobe).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.WashingClothes).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Wifi).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.WorkingBoy).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.İtem).HasMaxLength(50);
             });
 
@@ -197,7 +224,7 @@ namespace Model.Contexts
                 entity.HasOne(d => d.SecondStepCustomerForeign)
                     .WithMany(p => p.SecondStepCustomers)
                     .HasForeignKey(d => d.SecondStepCustomerForeignId)
-                    .HasConstraintName("FK__SecondSte__Secon__5629CD9C");
+                    .HasConstraintName("FK__SecondSte__Secon__40058253");
             });
 
             modelBuilder.Entity<Sell>(entity =>

@@ -9,32 +9,55 @@ namespace MyApi.Controllers
     [ApiController]
     public class SellController : ControllerBase
     {
-        public SellOperation sellOperation { get; set; }
-        public SellController()
-        {
-            sellOperation = new SellOperation();
-        }
+        public SellOperation sellOperation  =new SellOperation();
+        public SellOperationImg sellOperationImg = new SellOperationImg();
+        public SellOperationCustomer sellOperationCustomer = new SellOperationCustomer();
+
         [HttpGet]
-        public List<Sell> Get()
+        public async Task<List<string>> Get()
         {
-            return sellOperation.GetAll().Data;
+            var result = await sellOperation.GetAll();
+            return result.Data;
+        }
+        [HttpGet("Normal")]
+        public async Task<List<string>> GetNormal()
+        {
+            var result = await sellOperation.GetAllNormal();
+            return result.Data;
         }
         [HttpGet("{Id}")]
-        public Sell Get(int Id)
+        public async Task<object> Get(int Id)
         {
-            return sellOperation.GetById(Id).Data;
+            var result = await sellOperation.GetByIdList(Id);
+            return result.Data;
+        }
+
+        [HttpGet("Admin/{Id}")]
+        public async Task<object> GetAdmin(int Id)
+        {
+            try
+            {
+                var result = await sellOperation.GetByIdListAdmin(Id);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+
         }
         [HttpPost]
-        public void Add([FromBody] Sell sell)
+        public async void Add( Sell sell)
         {
-            sellOperation.Add(sell);
+           await sellOperation.Add(sell);
         }
-        [HttpDelete]
-        public void Delete(int id)
+        [HttpDelete("{Id}")]
+        public async void Delete(int Id)
         {
-            //?
-            var model = sellOperation.GetById(id).Data;
-            sellOperation.Delete(model);
+            sellOperationImg.DeleteList(Id);
+            sellOperationCustomer.DeleteList(Id);
+            var entity = await sellOperation.GetById(Id);
+            sellOperation.Delete(entity.Data);
         }
         [HttpPut]
         public void Update([FromBody] Sell sell)

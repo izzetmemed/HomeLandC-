@@ -1,6 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Message;
 using Core;
+using DataAccess.AccessingDb.Concrete;
 using DataAccess.AccessingDbRent.Abstract;
 using DataAccess.AccessingDbRent.Concrete;
 using Model.Models;
@@ -17,21 +18,31 @@ namespace Business.Concrete
     public class ObyektOperation : IObyektService
     {
         public ObyektAccess obyektAccess;
+        public ObyektAccessImg obyektAccessImg;
         public ObyektOperation()
         {
             obyektAccess = new ObyektAccess();
+            obyektAccessImg = new ObyektAccessImg();
         }
-        public IResult Add(Obyekt Model)
+        public async Task<IResult> Add(Obyekt Model)
         {
+            string[] Check = { "Addition", "CoordinateX", "CoordinateY", "Document" };
+
             bool allPropertiesNullOrWhiteSpace = true;
 
             foreach (PropertyInfo property in typeof(Obyekt).GetProperties())
             {
+
                 if (property.PropertyType == typeof(string))
                 {
                     string? value = (string?)property.GetValue(Model);
-                    if (string.IsNullOrWhiteSpace(value))
+                    if (Check.Contains(property.Name))
                     {
+
+                    }
+                    else if (string.IsNullOrWhiteSpace(value))
+                    {
+                        var name = property.Name;
                         allPropertiesNullOrWhiteSpace = false;
                         break;
                     }
@@ -46,6 +57,7 @@ namespace Business.Concrete
                     }
                 }
             }
+
             if (allPropertiesNullOrWhiteSpace)
             {
                 obyektAccess.Add(Model);
@@ -57,23 +69,50 @@ namespace Business.Concrete
             }
         }
 
-        public IResult Delete(Obyekt Model)
+        public async Task<IResult> Delete(Obyekt Model)
         {
             obyektAccess.Delete(Model);
             return new SuccessResult(MyMessage.Success);
         }
 
-        public IDataResult<List<Obyekt>> GetAll()
+        public async Task<IDataResult<List<string>>> GetAll()
         {
-            return new SuccessDataResult<List<Obyekt>>(obyektAccess.GetAll());
+            return new SuccessDataResult<List<string>>(await obyektAccess.GetAll());
         }
 
-        public IDataResult<Obyekt> GetById(int id)
+        public async Task<IDataResult<Obyekt>> GetById(int id)
         {
             return new SuccessDataResult<Obyekt>(obyektAccess.GetById(x => x.Id == id));
         }
 
-        public IResult Update(Obyekt Model)
+        public async Task<IDataResult<object>> GetByIdList(int id)
+        {
+            var data = obyektAccess.GetById(x => x.Id == id);
+            var img = await obyektAccessImg.GetByIdList(id);
+            var needData = new
+            {
+                Id = data.Id,
+                Address = data.Address,
+                Room = data.Room,
+                Metro = data.Metro,
+                Price = data.Price,
+                Item = data.İtem,
+                Region = data.Region,
+                Area = data.Area,
+                Date = data.Date,
+                CoordinateX = data.CoordinateX,
+                CoordinateY = data.CoordinateY,
+                Repair = data.Repair,
+                Addition = data.Addition,
+                Document = data.Document,
+                SellorRent = data.SellOrRent,
+                Img = img.Select(x => x.ImgPath).ToList()
+            };
+
+            return new SuccessDataResult<object>(needData);
+        }
+
+        public async Task<IResult> Update(Obyekt Model)
         {
             obyektAccess.Update(Model);
             return new SuccessResult(MyMessage.Success);

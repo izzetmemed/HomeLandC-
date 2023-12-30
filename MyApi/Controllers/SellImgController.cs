@@ -5,6 +5,8 @@ using CloudinaryDotNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
+using System.Text.Json;
+using DataAccess.AccessingDbRent.Concrete;
 
 namespace MyApi.Controllers
 {
@@ -14,57 +16,85 @@ namespace MyApi.Controllers
     {
         public SellOperationImg RentImgProcess;
         public SellImg ImgNameProperty;
+        public SellOperation sell;
 
         public SellImgController()
         {
             RentImgProcess = new SellOperationImg();
             ImgNameProperty = new SellImg();
+            sell = new SellOperation();
         }
 
         [HttpPost]
-        public IActionResult UploadImage(IFormFile image)
+        public async Task<IActionResult> UploadImage([FromForm] List<IFormFile> image)
         {
-            if (image == null || image.Length == 0)
+            IConfiguration configuration = new ConfigurationBuilder()
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+              .Build();
+
+            string cloudName = configuration["Password:CloudName"];
+            string apiKey = configuration["Password:ApiKey"];
+            string apiSecret = configuration["Password:ApiSecret"];
+            string cloudinaryFolder = "Home/Sell";
+
+            var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
+            var cloudinary = new Cloudinary(cloudinaryAccount);
+            async Task<int> GetLastId()
             {
-                return BadRequest("No image provided");
-            }
+                var items = await sell.GetAll();
 
-            try
-            {
-                IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .Build();
-
-                string cloudName = configuration["Password:CloudName"];
-                string apiKey = configuration["Password:ApiKey"];
-                string apiSecret = configuration["Password:ApiSecret"];
-                string cloudinaryFolder = "Home/Sell";
-
-                var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
-                var cloudinary = new Cloudinary(cloudinaryAccount);
-
-                string uniqueFilename = Guid.NewGuid().ToString("N");
-                string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
-
-                var uploadResult = UploadImageAndGetPath(cloudinary, image, cloudinaryImagePath);
-
-
-
-                RentImgProcess.Add(new SellImg
+                if (items.Data.Any())
                 {
-                    ImgPath = cloudinaryImagePath,
-                    ImgIdForeignId = 1,
-                });
+                    var lastItem = items.Data.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<Sell>(lastItem);
 
-                return Ok(new { Message = "Image uploaded successfully" });
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
             }
-            catch (Exception ex)
+            var LastId = await GetLastId();
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                if (image == null || image.Capacity == 0)
+                {
+                    return BadRequest("No image provided");
+                }
+
+                try
+                {
+                    for (var i = 0; i < image.Capacity; i++)
+                    {
+                        string uniqueFilename = Guid.NewGuid().ToString("N");
+                        string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
+
+                        var uploadResult = UploadImageAndGetPath(cloudinary, image[i], cloudinaryImagePath);
+                        RentImgProcess.Add(new SellImg
+                        {
+                            ImgPath = cloudinaryImagePath,
+                            ImgIdForeignId = LastId,
+                        });
+
+                    }
+
+
+
+
+                    return Ok(new { Message = "Image uploaded successfully" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+
+
             }
         }
-
         static string UploadImageAndGetPath(Cloudinary cloudinary, IFormFile image, string cloudinaryImagePath)
         {
             using (var stream = image.OpenReadStream())
@@ -80,6 +110,43 @@ namespace MyApi.Controllers
                 var uploadResult = cloudinary.Upload(uploadParams);
 
                 return uploadResult.SecureUri.ToString();
+            }
+        }
+
+        [HttpGet("DownloadImages")]
+        public IActionResult DownloadImages([FromQuery(Name = "imgNames")] List<string> DownloadImages)
+        {
+            try
+            {
+                if (DownloadImages[0] == null)
+                {
+                    return Ok( "Array is null");
+                }
+                else
+                {
+                    var SplitDataDownloadImages = DownloadImages[0].Split(",");
+                    IConfiguration configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .Build();
+
+                    string cloudName = configuration["Password:CloudName"];
+                    string cloudinaryFolder = "Home/Sell";
+
+                    List<string> imageUrls = new List<string>();
+                    foreach (var imgName in SplitDataDownloadImages)
+                    {
+                        string imageUrl = $"https://res.cloudinary.com/{cloudName}/{imgName}";
+                        imageUrls.Add(imageUrl);
+                    }
+
+                    return Ok(new { Message = "Image URLs generated successfully", ImageUrls = imageUrls });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
             }
         }
     }

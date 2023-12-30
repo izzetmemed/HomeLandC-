@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IRentHomeServiceCustomer : IGenericService<SecondStepCustomer>
+    public interface IRentHomeServiceCustomer : IGenericService<SecondStepCustomer>,IGenericServiceDeleteList
     {
     }
 }

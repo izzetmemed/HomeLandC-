@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Business.Abstract
+namespace DataAccess.Repository
 {
-    public interface IObyektService : IGenericService<Obyekt>, IGenricServiceGetByIdObject
+    public interface IBaseRepositoryGetById
     {
+        Task<List<ImgName>> GetByIdList(int foriegnId);
     }
 }

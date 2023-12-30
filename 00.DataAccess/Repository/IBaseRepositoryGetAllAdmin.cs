@@ -1,5 +1,4 @@
-﻿using Model.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repository
 {
-    public interface IBaseRepositoryDeleteList
+    public interface IBaseRepositoryGetAllAdmin
     {
-        void DeleteList(int foreignId);
+        Task<List<string>> GetAllNormal();
     }
 }

@@ -14,33 +14,33 @@ namespace MyApi.Controllers
         {
             sellOperationCustomer = new SellOperationCustomer();
         }
-        [HttpGet]
-        public List<SellSecondStepCustomer> Get()
-        {
+        //[HttpGet]
+        //public List<SellSecondStepCustomer> Get()
+        //{
 
-            return sellOperationCustomer.GetAll().Data;
-        }
-        [HttpGet("{Id}")]
-        public SellSecondStepCustomer Get(int Id)
-        {
-            return sellOperationCustomer.GetById(Id).Data;
-        }
+        //    return sellOperationCustomer.GetAll().Data;
+        //}
+        //[HttpGet("{Id}")]
+        //public SellSecondStepCustomer Get(int Id)
+        //{
+        //    return sellOperationCustomer.GetById(Id).Data;
+        //}
         [HttpPost]
         public void Add([FromBody] SellSecondStepCustomer entity)
         {
             sellOperationCustomer.Add(entity);
         }
-        [HttpPut]
-        public void Update([FromBody] SellSecondStepCustomer entity)
-        {
-            sellOperationCustomer.Update(entity);
-        }
-        [HttpDelete("{Id}")]
-        public void Delete(int Id)
-        {
-            var entity = sellOperationCustomer.GetById(Id).Data;
-            sellOperationCustomer.Delete(entity);
-        }
+        //[HttpPut]
+        //public void Update([FromBody] SellSecondStepCustomer entity)
+        //{
+        //    sellOperationCustomer.Update(entity);
+        //}
+        //[HttpDelete("{Id}")]
+        //public void Delete(int Id)
+        //{
+        //    var entity = sellOperationCustomer.GetById(Id).Data;
+        //    sellOperationCustomer.Delete(entity);
+        //}
 
     }
 }

@@ -44,6 +44,10 @@ namespace Model.Models
         public bool? IsPaidHomeOwnFirstStep { get; set; }
         public bool? IsPaidCustomerFirstStep { get; set; }
         public bool? IsCalledWithHomeOwnThirdStep { get; set; }
+        public bool? Boy { get; set; }
+        public bool? Girl { get; set; }
+        public bool? WorkingBoy { get; set; }
+        public bool? Family { get; set; }
 
         public virtual ICollection<ImgName> ImgNames { get; set; }
         public virtual ICollection<SecondStepCustomer> SecondStepCustomers { get; set; }

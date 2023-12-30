@@ -19,6 +19,7 @@ namespace Model.Models
         public string? Address { get; set; }
         public string? SellOrRent { get; set; }
         public string? Metro { get; set; }
+        public string? Document { get; set; }
         public string? CoordinateX { get; set; }
         public string? CoordinateY { get; set; }
         public byte? Room { get; set; }

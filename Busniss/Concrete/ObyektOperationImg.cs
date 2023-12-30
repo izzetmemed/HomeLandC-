@@ -19,34 +19,44 @@ namespace Business.Concrete
         {
             AccessImg = new ObyektAccessImg();
         }
-        public IResult Add(ObyektImg Model)
+        public async Task<IResult> Add(ObyektImg Model)
         {
-            AccessImg.Add(Model);
+
+            if (string.IsNullOrWhiteSpace(Model.ImgPath))
+            {
+                return new ErrorResult(MyMessage.Success);
+            }
+            else
+            {
+                AccessImg.Add(Model);
+            }
+
+           
             return new SuccessResult(MyMessage.Success);
         }
 
-        public IResult Delete(ObyektImg Model)
+        public async Task<IResult> Delete(ObyektImg Model)
         {
             AccessImg.Delete(Model);
             return new SuccessResult(MyMessage.Success);
         }
 
-        public IDataResult<List<ObyektImg>> GetAll()
+        public async Task<IDataResult<List<string>>> GetAll()
         {
-            return new SuccessDataResult<List<ObyektImg>>(AccessImg.GetAll()); 
+            return new SuccessDataResult<List<string>>(await AccessImg.GetAll());
         }
 
-        public IDataResult<ObyektImg> GetById(int id)
+        public async Task<IDataResult<ObyektImg>> GetById(int id)
         {
             return new SuccessDataResult<ObyektImg>(AccessImg.GetById(x => x.ImgId == id));
         }
 
-        public IResult Update(ObyektImg Model)
+        public async Task<IResult> Update(ObyektImg Model)
         {
-          AccessImg.Update(Model);
+            AccessImg.Update(Model);
             return new SuccessResult(MyMessage.Success);
         }
-        public IResult DeleteList(int ForeignId)
+        public async Task<IResult> DeleteList(int ForeignId)
         {
             AccessImg.DeleteList(ForeignId);
             return new SuccessResult(MyMessage.Success);

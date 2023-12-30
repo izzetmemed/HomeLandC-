@@ -1,77 +1,133 @@
-﻿using _00.DataAccess.AccessingDbRent.Abstract;
+﻿ using _00.DataAccess.AccessingDbRent.Abstract;
 using DataAccess.AccessingDbRent.Abstract;
 using DataAccess.Repository;
+using Microsoft.EntityFrameworkCore;
 using Model.Contexts;
 using Model.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace DataAccess.AccessingDbRent.Concrete
 {
     public class SellAccess : BaseRepository<Sell, MyDbContext>, ISell
     {
-        public List<Sell> GetAll()
+
+        public async Task<List<string>> GetAll()
         {
             using (MyDbContext context = new MyDbContext())
             {
-                var result = from rentHome in context.Set<Sell>()
-                             join imgName in context.Set<SellImg>() on rentHome.Id equals imgName.ImgIdForeignId into imgNamesGroup
-                             from imgName in imgNamesGroup.DefaultIfEmpty()
-                             join customer in context.Set<SellSecondStepCustomer>() on rentHome.Id equals customer.SecondStepCustomerForeignId into customersGroup
-                             from customer in customersGroup.DefaultIfEmpty()
-                             select new Sell
-                             {
-                                 Id = rentHome.Id,
-                                 Fullname = rentHome.Fullname,
-                                 Number = rentHome.Number,
-                                 Region = rentHome.Region,
-                                 Address = rentHome.Address,
-                                 Floor = rentHome.Floor,
-                                 Metro = rentHome.Metro,
-                                 CoordinateX = rentHome.CoordinateX,
-                                 CoordinateY = rentHome.CoordinateY,
-                                 Room = rentHome.Room,
-                                 Repair = rentHome.Repair,
-                                 Building = rentHome.Building,
-                                 İtem = rentHome.İtem,
-                                 Area = rentHome.Area,
-                                 Date = rentHome.Date,
-                                 Price = rentHome.Price,
-                                 Addition = rentHome.Addition,
-                                 IsCalledWithHomeOwnFirstStep = rentHome.IsCalledWithHomeOwnFirstStep,
-                                 IsCalledWithCustomerFirstStep = rentHome.IsCalledWithCustomerFirstStep,
-                                 IsPaidHomeOwnFirstStep = rentHome.IsPaidHomeOwnFirstStep,
-                                 IsPaidCustomerFirstStep = rentHome.IsPaidCustomerFirstStep,
-                                 IsCalledWithHomeOwnThirdStep = rentHome.IsCalledWithHomeOwnThirdStep,
-                                 SellImgs = imgName == null ? null : new List<SellImg>
-                                 {
-                                     new SellImg
-                                     {
-                                         ImgId = imgName.ImgId,
-                                         ImgIdForeignId = imgName.ImgIdForeignId,
-                                         ImgPath = imgName.ImgPath,
-                                         ImgIdForeign = imgName.ImgIdForeign
-                                     }
-                                 }.ToList(),
-                                 SellSecondStepCustomers = customer == null ? null : new List<SellSecondStepCustomer>
-                                 {
-                                     new SellSecondStepCustomer
-                                     {
-                                         SecondStepCustomerId = customer.SecondStepCustomerId,
-                                         SecondStepCustomerForeignId = customer.SecondStepCustomerForeignId,
-                                         FullName = customer.FullName,
-                                         Number = customer.Number,
-                                         DirectCustomerDate = customer.DirectCustomerDate,
-                                         SecondStepCustomerForeign = customer.SecondStepCustomerForeign
-                                     }
-                                 }.ToList()
-                             };
+                var Sells = await context.Set<Sell>().ToListAsync();
+                var SellImg = await context.Set<SellImg>().ToListAsync();
 
-                return result.ToList();
+
+
+
+                foreach (var sell in Sells)
+                {
+                    sell.SellImgs = SellImg.Where(img => img.ImgIdForeignId == sell.Id).ToList();
+                 
+                }
+
+                var allData = Sells;
+                List<string> data = new List<string>();
+
+                foreach (var item in allData)
+                {
+                    var needData = new
+                    {
+                        Id = item.Id,
+                        Address = item.Address,
+                        Room = item.Room,
+                        Metro = item.Metro,
+                        Price = item.Price,
+                        Item = item.İtem,
+                        Region = item.Region,
+                        Area = item.Area,
+                        Date = item.Date,
+                        Document=item.Document,
+                        Img = item.SellImgs.Select(x => x.ImgPath).ToList()
+                    };
+                    string jsonData = JsonSerializer.Serialize(needData);
+                    data.Add(jsonData);
+                }
+                data.Reverse();
+                return data;
             }
         }
+
+        public async Task<List<string>> GetAllNormal()
+        {
+            using (MyDbContext context = new MyDbContext())
+            {
+                var Sells = await context.Set<Sell>().ToListAsync();
+                var img = await context.Set<SellImg>().ToListAsync();
+                var customer = await context.Set<SellSecondStepCustomer>().ToListAsync();
+
+
+
+                foreach (var sell in Sells)
+                {
+                    sell.SellImgs = img.Where(img => img.ImgIdForeignId == sell.Id).ToList();
+                    sell.SellSecondStepCustomers = customer
+                        .Where(customer => customer.SecondStepCustomerForeignId == sell.Id)
+                        .ToList();
+                }
+
+                var allData = Sells;
+                List<string> data = new List<string>();
+
+                foreach (var item in allData)
+                {
+                    var needData = new
+                    {
+                        Id = item.Id,
+                        FullName = item.Fullname,
+                        Number = item.Number,
+                        Floor = item.Floor,
+                        CoordinateX = item.CoordinateX,
+                        CoordinateY = item.CoordinateY,
+                        Repair = item.Repair,
+                        Building = item.Building,
+                        Addition = item.Addition,
+                        Address = item.Address,
+                        Room = item.Room,
+                        Metro = item.Metro,
+                        Price = item.Price,
+                        Item = item.İtem,
+                        Region = item.Region,
+                        Area = item.Area,
+                        Date = item.Date,
+                        IsCalledWithHomeOwnFirstStep = item.IsCalledWithHomeOwnFirstStep,
+                        IsCalledWithCustomerFirstStep = item.IsCalledWithCustomerFirstStep,
+                        IsPaidHomeOwnFirstStep = item.IsPaidHomeOwnFirstStep,
+                        IsPaidCustomerFirstStep = item.IsPaidCustomerFirstStep,
+                        IsCalledWithHomeOwnThirdStep = item.IsCalledWithHomeOwnThirdStep,
+                        Img = item.SellImgs.Select(x => x.ImgPath).ToList(),
+                        Customer = item.SellSecondStepCustomers.Select(x => SerializeSecondStepCustomer(x)).ToList()
+                    };
+                    string jsonData = JsonSerializer.Serialize(needData);
+                    data.Add(jsonData);
+                }
+                data.Reverse();
+                return data;
+            }
+        }
+        private string SerializeSecondStepCustomer(SellSecondStepCustomer customer)
+        {
+            var serializedCustomer = new
+            {
+                FullName = JsonSerializer.Serialize(customer.FullName),
+                Number = JsonSerializer.Serialize(customer.Number),
+                DirectCustomerDate = JsonSerializer.Serialize(customer.DirectCustomerDate),
+                SecondStepCustomerId = JsonSerializer.Serialize(customer.SecondStepCustomerId)
+            };
+
+            return JsonSerializer.Serialize(serializedCustomer);
+        }
+
     }
 }

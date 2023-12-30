@@ -10,44 +10,45 @@ namespace MyApi.Controllers
     [ApiController]
     public class ObyektController : ControllerBase
     {
-        public ObyektOperationCustomer RentCustomerProcess { get; set; }
+        //public ObyektOperationCustomer RentCustomerProcess { get; set; }
         public ObyektOperation RentProcess { get; set; }
         public ObyektOperationImg RentImgProcess { get; set; }
 
         public ObyektController()
         {
-            RentCustomerProcess = new ObyektOperationCustomer();
+            //RentCustomerProcess = new ObyektOperationCustomer();
             RentProcess = new ObyektOperation();
             RentImgProcess = new ObyektOperationImg();
         }
         [HttpGet]
-        public List<Obyekt> Get()
+        public async Task<List<string>> Get()
         {
-
-            return RentProcess.GetAll().Data;
+            var result = await RentProcess.GetAll();
+            return result.Data;
         }
         [HttpGet("{Id}")]
-        public Obyekt Get(int Id)
+        public async Task<object> Get(int Id)
         {
-            return RentProcess.GetById(Id).Data;
+            var result = await RentProcess.GetByIdList(Id);
+            return result.Data;
         }
         [HttpPost]
-        public void Add([FromBody] Obyekt entity)
+        public async void Add( Obyekt entity)
         {
-            RentProcess.Add(entity);
+           await RentProcess.Add(entity);
         }
         [HttpPut]
-        public void Update([FromBody] Obyekt entity)
+        public async void Update( Obyekt entity)
         {
-            RentProcess.Update(entity);
+           await RentProcess.Update(entity);
         }
         [HttpDelete("{Id}")]
         public void Delete(int Id)
         {
-            RentImgProcess.DeleteList(Id);
-            RentCustomerProcess.DeleteList(Id);
-            var entity = RentProcess.GetById(Id).Data;
-            RentProcess.Delete(entity);
+            //RentImgProcess.DeleteList(Id);
+            //RentCustomerProcess.DeleteList(Id);
+            //var entity = RentProcess.GetById(Id).Data;
+            //RentProcess.Delete(entity);
         }
     }
 }

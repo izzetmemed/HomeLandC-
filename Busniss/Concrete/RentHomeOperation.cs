@@ -1,11 +1,14 @@
 ﻿using Business.Abstract;
 using Business.Message;
+using CloudinaryDotNet.Actions;
 using Core;
 using DataAccess.AccessingDb.Concrete;
+using DataAccess.AccessingDbRent.Concrete;
 using Model.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -16,7 +19,9 @@ namespace Business.Concrete
     public class RentHomeOperation : IRentHomeService
     {
         Access Access = new Access();
-        public IResult Add(RentHome Model)
+        AccessImg AccessImg = new AccessImg();
+        AccessCustomer AccessCustomer = new AccessCustomer();
+        public async Task<IResult> Add(RentHome Model)
         {
             string[] Check = { "Addition", "CoordinateX", "CoordinateY" };
 
@@ -24,14 +29,14 @@ namespace Business.Concrete
 
             foreach (PropertyInfo property in typeof(RentHome).GetProperties())
             {
-               
+
                 if (property.PropertyType == typeof(string))
-                {   
-                    string? value = (string?)property.GetValue(Model);
-                    if(Check.Contains(property.Name))
                 {
-                      
-                }
+                    string? value = (string?)property.GetValue(Model);
+                    if (Check.Contains(property.Name))
+                    {
+
+                    }
                     else if (string.IsNullOrWhiteSpace(value))
                     {
                         allPropertiesNullOrWhiteSpace = false;
@@ -58,29 +63,130 @@ namespace Business.Concrete
             {
                 return new ErrorResult("Some properties are not null or white space.");
             }
-         }
+        }
 
 
 
-        public IResult Delete(RentHome Model)
+        public async Task<IResult> Delete(RentHome Model)
         {
             Access.Delete(Model);
             return new SuccessResult(MyMessage.Success);
         }
 
-        public IDataResult<List<RentHome>> GetAll()
+        public async Task<IDataResult<List<string>>> GetAll()
         {
-            return new SuccessDataResult<List<RentHome>>(Access.GetAll());
+            return new SuccessDataResult<List<string>>( await Access.GetAll());
         }
-    public IDataResult<RentHome> GetById(int id)
+
+        public async Task<IDataResult<List<string>>> GetAllNormal()
+        {
+            return new SuccessDataResult<List<string>>(await Access.GetAllNormal());
+        }
+
+        public async Task<IDataResult<RentHome>> GetById(int id)
         {
             return new SuccessDataResult<RentHome>(Access.GetById(x => x.Id == id));
         }
 
-        public IResult Update(RentHome Model)
+        public async Task<IDataResult<object>> GetByIdList(int id)
+        {
+            var data = Access.GetById(x => x.Id == id);
+            var img =await AccessImg.GetByIdList(id);
+            var needData = new
+            {
+                Id = data.Id,
+                Address = data.Address,
+                Room = data.Room,
+                Metro = data.Metro,
+                Price = data.Price,
+                Item = data.İtem,
+                Region = data.Region,
+                Area = data.Area,
+                Date = data.Date,
+                Floor=data.Floor,
+                CoordinateX=data.CoordinateX,
+                CoordinateY=data.CoordinateY,
+                Repair=data.Repair,
+                Building=data.Building,
+                Bed=data.Bed,
+                Wardrobe=data.Wardrobe,
+                TableChair=data.TableChair,
+                CentralHeating=data.CentralHeating,
+                GasHeating=data.GasHeating,
+                Combi=data.Combi,
+                Tv=data.Tv,
+                WashingClothes=data.WashingClothes,
+                AirConditioning=data.AirConditioning,
+                Sofa=data.Sofa,
+                Wifi=data.Wifi,
+                Addition=data.Addition,
+                Boy=data.Boy,
+                Girl=data.Girl,
+                WorkingBoy=data.WorkingBoy,
+                Family=data.Family,
+                Img = img.Select(x => x.ImgPath).ToList()
+            };
+
+            return new SuccessDataResult<object>(needData);
+        }
+
+        public async Task<IDataResult<object>> GetByIdListAdmin(int id)
+        {
+            var data = Access.GetById(x => x.Id == id);
+            var img = await AccessImg.GetByIdList(id);
+             var customer= await AccessCustomer.GetByIdList(id);
+            var needData = new
+            {
+                Id = data.Id,
+                Address = data.Address,
+                Room = data.Room,
+                Metro = data.Metro,
+                Price = data.Price,
+                İtem = data.İtem,
+                Region = data.Region,
+                Area = data.Area,
+                Number=data.Number,
+                Date = data.Date,
+                Fullname = data.Fullname,
+                Floor = data.Floor,
+                CoordinateX = data.CoordinateX,
+                CoordinateY = data.CoordinateY,
+                Repair = data.Repair,
+                Building = data.Building,
+                Bed = data.Bed,
+                Wardrobe = data.Wardrobe,
+                TableChair = data.TableChair,
+                CentralHeating = data.CentralHeating,
+                GasHeating = data.GasHeating,
+                Combi = data.Combi,
+                Tv = data.Tv,
+                WashingClothes = data.WashingClothes,
+                AirConditioning = data.AirConditioning,
+                Sofa = data.Sofa,
+                Wifi = data.Wifi,
+                Addition = data.Addition,
+                Boy = data.Boy,
+                Girl = data.Girl,
+                WorkingBoy = data.WorkingBoy,
+                Family = data.Family,
+                IsCalledWithOwnFirstStep = data.IsCalledWithHomeOwnFirstStep,
+                IsCalledWithCustomerFirstStep = data.IsCalledWithCustomerFirstStep,
+                IsPaidHomeOwnFirstStep = data.IsPaidHomeOwnFirstStep,
+                IsPaidCustomerFirstStep = data.IsPaidCustomerFirstStep,
+                IsCalledWithHomeOwnThirdStep = data.IsCalledWithHomeOwnThirdStep,
+                Img = img.Select(x => x.ImgPath).ToList(),
+                Customer= customer.ToList(),
+            };
+
+            return new SuccessDataResult<object>(needData);
+        }
+
+        public async Task<IResult> Update(RentHome Model)
         {
             Access.Update(Model);
             return new SuccessResult(MyMessage.Success);
         }
+
+       
     }
 }

@@ -19,16 +19,18 @@ namespace MyApi.Controllers
             RentCustomerProcess = new RentHomeOperationCustomer();
         }
 
-        [HttpGet]
-        public List<SecondStepCustomer> Get()
-        {
-            return RentCustomerProcess.GetAll().Data;
-        }
+        //[HttpGet]
+        //public async Task<List<string>> Get()
+        //{
+        //    var data =await RentCustomerProcess.GetAll();
+        //    return data.Data;
+        //}
 
         [HttpGet("{Id}")]
-        public SecondStepCustomer Get(int Id)
+        public async Task<SecondStepCustomer> Get(int Id)
         {
-            return RentCustomerProcess.GetById(Id).Data;
+            var data = await RentCustomerProcess.GetById(Id);
+            return data.Data;
         }
 
         [HttpPost]
@@ -37,17 +39,17 @@ namespace MyApi.Controllers
             RentCustomerProcess.Add(entity);
         }
 
-        [HttpPut]
-        public void Update([FromBody] SecondStepCustomer entity)
-        {
-            RentCustomerProcess.Update(entity);
-        }
+        //[HttpPut]
+        //public void Update([FromBody] SecondStepCustomer entity)
+        //{
+        //    RentCustomerProcess.Update(entity);
+        //}
 
-        [HttpDelete("{Id}")]
-        public void Delete(int Id)
-        {
-            var entity = RentCustomerProcess.GetById(Id).Data;
-            RentCustomerProcess.Delete(entity);
-        }
+        //[HttpDelete("{Id}")]
+        //public async void Delete(int Id)
+        //{
+        //    var entity =await RentCustomerProcess.GetById(Id);
+        //    RentCustomerProcess.Delete(entity.Data);
+        //}
     }
 }

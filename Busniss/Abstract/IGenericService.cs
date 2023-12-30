@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Business.Abstract
+namespace Business.Abstract 
 {
     public interface IGenericService<T> 
     {
-        IResult Add(T Model);
-        IResult Update(T Model);
-        IResult Delete(T Model);
-        IDataResult<T> GetById(int id);
-        IDataResult<List<T>> GetAll();
+        Task<IResult> Add(T Model);
+        Task<IResult> Update(T Model);
+        Task<IResult> Delete(T Model);
+        Task<IDataResult<T>> GetById(int id);
+        Task<IDataResult<List<string>>> GetAll();
     }
 }

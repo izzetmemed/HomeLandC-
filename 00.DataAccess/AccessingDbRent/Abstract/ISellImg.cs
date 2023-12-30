@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.AccessingDbRent.Abstract
 {
-    public interface ISellImg : IBaseRepository<SellImg>, IBaseRepositoryGetAll<SellImg>, IBaseRepositoryDeleteList
+    public interface ISellImg : IBaseRepository<SellImg>, IBaseRepositoryGetAll<SellImg>, IBaseRepositoryDeleteList, IBaserepositoryGetByİdList<SellImg>
     {
 
     }
