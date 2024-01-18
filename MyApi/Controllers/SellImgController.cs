@@ -17,12 +17,14 @@ namespace MyApi.Controllers
         public SellOperationImg RentImgProcess;
         public SellImg ImgNameProperty;
         public SellOperation sell;
+        public SellOperationCustomer sellOperationCustomer;
 
         public SellImgController()
         {
             RentImgProcess = new SellOperationImg();
             ImgNameProperty = new SellImg();
             sell = new SellOperation();
+            sellOperationCustomer = new SellOperationCustomer();    
         }
 
         [HttpPost]
@@ -61,14 +63,14 @@ namespace MyApi.Controllers
             }
             var LastId = await GetLastId();
             {
-                if (image == null || image.Capacity == 0)
+                if (image == null || image.Count == 0)
                 {
                     return BadRequest("No image provided");
                 }
 
                 try
                 {
-                    for (var i = 0; i < image.Capacity; i++)
+                    for (var i = 0; i < image.Count; i++)
                     {
                         string uniqueFilename = Guid.NewGuid().ToString("N");
                         string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
@@ -136,7 +138,7 @@ namespace MyApi.Controllers
                     List<string> imageUrls = new List<string>();
                     foreach (var imgName in SplitDataDownloadImages)
                     {
-                        string imageUrl = $"https://res.cloudinary.com/{cloudName}/{imgName}";
+                        string imageUrl = $" https://res.cloudinary.com/{cloudName}/image/upload/c_scale,q_auto,f_auto/{imgName}";
                         imageUrls.Add(imageUrl);
                     }
 
@@ -148,6 +150,53 @@ namespace MyApi.Controllers
             {
                 return BadRequest($"An error occurred: {ex.Message}");
             }
+        }
+
+
+        [HttpPut("{Id}")]
+        public async Task<IActionResult> Update(int Id)
+        {
+            try
+            {
+                var ListImg = await RentImgProcess.GetByIdList(Id);
+                async Task<int> GetLastId()
+                {
+                    var items = await sell.GetAll();
+
+                    if (items.Data.Any())
+                    {
+                        var lastItem = items.Data.FirstOrDefault();
+                        var RentHome = JsonSerializer.Deserialize<Sell>(lastItem);
+
+
+
+
+                        return RentHome.Id;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                var LastId = await GetLastId();
+                foreach (var item in ListImg.Data)
+                {
+                    item.ImgIdForeignId = LastId;
+                    RentImgProcess.Update(item);
+                }
+                var Customer = await sellOperationCustomer.GetByIdList(Id);
+                foreach (var item in Customer.Data)
+                {
+                    item.SecondStepCustomerForeignId = LastId;
+                    sellOperationCustomer.Update(item);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Put img");
+            }
+
         }
     }
 }

@@ -10,45 +10,108 @@ namespace MyApi.Controllers
     [ApiController]
     public class ObyektController : ControllerBase
     {
-        //public ObyektOperationCustomer RentCustomerProcess { get; set; }
+        public ObyektOperationCustomer RentCustomerProcess { get; set; }
         public ObyektOperation RentProcess { get; set; }
         public ObyektOperationImg RentImgProcess { get; set; }
 
         public ObyektController()
         {
-            //RentCustomerProcess = new ObyektOperationCustomer();
+            RentCustomerProcess = new ObyektOperationCustomer();
             RentProcess = new ObyektOperation();
             RentImgProcess = new ObyektOperationImg();
         }
         [HttpGet]
         public async Task<List<string>> Get()
         {
-            var result = await RentProcess.GetAll();
-            return result.Data;
+            try
+            {
+                var result = await RentProcess.GetAll();
+                return result.Data;
+            }
+            catch
+            {
+                return  new List<string>();
+            }
+           
+        }
+        [HttpGet("Normal")]
+        public async Task<List<string>> GetNormal()
+        {
+            try
+            {
+                var result = await RentProcess.GetAllNormal();
+                return result.Data;
+            }
+            catch
+            {
+                return new List<string>();
+            }
+            
         }
         [HttpGet("{Id}")]
         public async Task<object> Get(int Id)
         {
-            var result = await RentProcess.GetByIdList(Id);
-            return result.Data;
+            try
+            {
+                var result = await RentProcess.GetByIdList(Id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
+                return result.Data;
+
+            }
+            catch
+            {
+                return new object();
+            }
+           
+        }
+        [HttpGet("Admin/{Id}")]
+        public async Task<object> GetAdmin(int Id)
+        {
+            try
+            {
+                var result = await RentProcess.GetByIdListAdmin(Id);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+
         }
         [HttpPost]
         public async void Add( Obyekt entity)
         {
-           await RentProcess.Add(entity);
+            try
+            {
+                await RentProcess.Add(entity);
+            }catch (Exception ex) { Console.WriteLine(ex); }
+          
         }
         [HttpPut]
         public async void Update( Obyekt entity)
         {
-           await RentProcess.Update(entity);
+            try
+            {
+                await RentProcess.Update(entity);
+            }
+            catch (Exception ex) { Console.WriteLine(ex); }
+          
         }
         [HttpDelete("{Id}")]
-        public void Delete(int Id)
+        public async void Delete(int Id)
         {
-            //RentImgProcess.DeleteList(Id);
-            //RentCustomerProcess.DeleteList(Id);
-            //var entity = RentProcess.GetById(Id).Data;
-            //RentProcess.Delete(entity);
+            try
+            {
+                RentImgProcess.DeleteList(Id);
+                await RentCustomerProcess.DeleteList(Id);
+                var entity = await RentProcess.GetById(Id);
+                RentProcess.Delete(entity.Data);
+            }
+            catch (Exception ex) { Console.WriteLine(ex); }
+           
         }
     }
 }

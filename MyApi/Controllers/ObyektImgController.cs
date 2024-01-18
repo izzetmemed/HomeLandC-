@@ -16,17 +16,27 @@ namespace MyApi.Controllers
         public ObyektOperationImg RentImgProcess;
         public ObyektImg ImgNameProperty;
         public ObyektOperation sell;
+        public ObyektOperationCustomer customerObyekt;
 
         public ObyektImgController()
         {
             RentImgProcess = new ObyektOperationImg();
             ImgNameProperty = new ObyektImg();
             sell = new ObyektOperation();
+            customerObyekt=new ObyektOperationCustomer();
         }
 
         [HttpPost]
         public async Task<IActionResult> UploadImage([FromForm] List<IFormFile> image)
         {
+            try
+            {
+
+            }
+            catch
+            {
+
+            }
             IConfiguration configuration = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -60,14 +70,14 @@ namespace MyApi.Controllers
             }
             var LastId = await GetLastId();
             {
-                if (image == null || image.Capacity == 0)
+                if (image == null || image.Count == 0)
                 {
                     return BadRequest("No image provided");
                 }
 
                 try
                 {
-                    for (var i = 0; i < image.Capacity; i++)
+                    for (var i = 0; i < image.Count; i++)
                     {
                         string uniqueFilename = Guid.NewGuid().ToString("N");
                         string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
@@ -135,7 +145,7 @@ namespace MyApi.Controllers
                     List<string> imageUrls = new List<string>();
                     foreach (var imgName in SplitDataDownloadImages)
                     {
-                        string imageUrl = $"https://res.cloudinary.com/{cloudName}/{imgName}";
+                        string imageUrl = $" https://res.cloudinary.com/{cloudName}/image/upload/c_scale,q_auto,f_auto/{imgName}";
                         imageUrls.Add(imageUrl);
                     }
 
@@ -147,6 +157,48 @@ namespace MyApi.Controllers
             {
                 return BadRequest($"An error occurred: {ex.Message}");
             }
+        }
+
+        [HttpPut("{Id}")]
+        public async Task<IActionResult> Update(int Id)
+        {
+            try
+            {
+                var ListImg = await RentImgProcess.GetByIdList(Id);
+                async Task<int> GetLastId()
+                {
+                    var items = await sell.GetAll();
+
+                    if (items.Data.Any())
+                    {
+                        var lastItem = items.Data.FirstOrDefault();
+                        var RentHome = JsonSerializer.Deserialize<Obyekt>(lastItem);
+                        return RentHome.Id;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                var LastId = await GetLastId();
+                foreach (var item in ListImg.Data)
+                {
+                    item.ImgIdForeignId = LastId;
+                    RentImgProcess.Update(item);
+                }
+                var Customer = await customerObyekt.GetByIdList(Id);
+                foreach (var item in Customer.Data)
+                {
+                    item.SecondStepCustomerForeignId = LastId;
+                    customerObyekt.Update(item);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Put img");
+            }
+
         }
     }
 }

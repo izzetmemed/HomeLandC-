@@ -47,6 +47,7 @@ namespace DataAccess.AccessingDbRent.Concrete
                         Item = item.İtem,
                         Region = item.Region,
                         Area = item.Area,
+                        Building=item.Building,
                         Date = item.Date,
                         Document=item.Document,
                         Img = item.SellImgs.Select(x => x.ImgPath).ToList()

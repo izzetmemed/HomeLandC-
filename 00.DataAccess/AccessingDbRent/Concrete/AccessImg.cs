@@ -54,20 +54,6 @@ namespace DataAccess.AccessingDbRent.Concrete
             using (MyDbContext context = new MyDbContext())
             {
                 var deleteGetById = await context.Set<ImgName>().Where(x => x.ImgIdForeignId == foreignId).ToListAsync();
-                //List<string> data = new List<string>();
-
-                //foreach (var item in deleteGetById)
-                //{
-                //    var needData = new
-                //    {
-                //        Id = item.ImgId,
-                //        ForeignID = item.ImgIdForeignId,
-                //        Path = item.ImgPath,
-                //    };
-                //    data.Add(needData);
-                //}
-
-
                 return deleteGetById;
             }
         }

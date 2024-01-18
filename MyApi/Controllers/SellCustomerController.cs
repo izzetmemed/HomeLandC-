@@ -28,13 +28,21 @@ namespace MyApi.Controllers
         [HttpPost]
         public void Add([FromBody] SellSecondStepCustomer entity)
         {
-            sellOperationCustomer.Add(entity);
+            try
+            {
+                sellOperationCustomer.Add(entity);
+            }catch (Exception ex) { Console.WriteLine(ex); }
+           
         }
-        //[HttpPut]
-        //public void Update([FromBody] SellSecondStepCustomer entity)
-        //{
-        //    sellOperationCustomer.Update(entity);
-        //}
+        [HttpPut]
+        public void Update([FromBody] SellSecondStepCustomer entity)
+        {
+            try
+            {
+                sellOperationCustomer.Update(entity);
+            }catch(Exception ex) { Console.WriteLine(ex); }
+           
+        }
         //[HttpDelete("{Id}")]
         //public void Delete(int Id)
         //{

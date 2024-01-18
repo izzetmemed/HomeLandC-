@@ -88,6 +88,10 @@ namespace Business.Concrete
         {
             var data = sellAccess.GetById(x => x.Id == id);
             var img = await sellAccessImg.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
             var needData = new
             {
                 Id = data.Id,
@@ -118,6 +122,10 @@ namespace Business.Concrete
              var data = sellAccess.GetById(x => x.Id == id);
             var img = await sellAccessImg.GetByIdList(id);
              var customer= await sellAccessCustomer.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
             var needData = new
             {
                 Id = data.Id,

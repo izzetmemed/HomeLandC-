@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 using Model.Models;
 
 namespace Model.Contexts
@@ -18,6 +19,7 @@ namespace Model.Contexts
         }
 
         public virtual DbSet<ImgName> ImgNames { get; set; } = null!;
+        public virtual DbSet<Medium> Media { get; set; } = null!;
         public virtual DbSet<Obyekt> Obyekts { get; set; } = null!;
         public virtual DbSet<ObyektImg> ObyektImgs { get; set; } = null!;
         public virtual DbSet<ObyektSecondStepCustomer> ObyektSecondStepCustomers { get; set; } = null!;
@@ -26,13 +28,19 @@ namespace Model.Contexts
         public virtual DbSet<Sell> Sells { get; set; } = null!;
         public virtual DbSet<SellImg> SellImgs { get; set; } = null!;
         public virtual DbSet<SellSecondStepCustomer> SellSecondStepCustomers { get; set; } = null!;
+        public virtual DbSet<UserModel> UserModels { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=HomeLand;Integrated Security=True;TrustServerCertificate=True");
+
+                IConfiguration configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+                string password = configuration["Password:DbContext"];
+                optionsBuilder.UseSqlServer(password);
             }
         }
 
@@ -53,6 +61,21 @@ namespace Model.Contexts
                     .WithMany(p => p.ImgNames)
                     .HasForeignKey(d => d.ImgIdForeignId)
                     .HasConstraintName("FK__ImgName__ImgIdFo__3D2915A8");
+            });
+
+            modelBuilder.Entity<Medium>(entity =>
+            {
+                entity.Property(e => e.Building).HasMaxLength(50);
+
+                entity.Property(e => e.Metro).HasMaxLength(50);
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Region).HasMaxLength(50);
+
+                entity.Property(e => e.SellOrRent).HasMaxLength(30);
+
+                entity.Property(e => e.Type).HasMaxLength(50);
             });
 
             modelBuilder.Entity<Obyekt>(entity =>
@@ -308,6 +331,25 @@ namespace Model.Contexts
                     .WithMany(p => p.SellSecondStepCustomers)
                     .HasForeignKey(d => d.SecondStepCustomerForeignId)
                     .HasConstraintName("FK__SEllSecon__Secon__6754599E");
+            });
+
+            modelBuilder.Entity<UserModel>(entity =>
+            {
+                entity.ToTable("UserModel");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.FirstName)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LastName)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.UserName)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
             });
 
             OnModelCreatingPartial(modelBuilder);

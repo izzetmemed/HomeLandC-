@@ -29,22 +29,52 @@ namespace MyApi.Controllers
         [HttpGet]
         public async Task<List<string>> Get()
         {
-            var result = await RentProcess.GetAll();
-            return result.Data;
+            try
+            {
+                var result = await RentProcess.GetAll();
+                return result.Data;
+            }catch(Exception ex) 
+            { 
+                Console.WriteLine(ex);
+                return new List<string>();
+            }
+            
         }
         [HttpGet("Normal")]
         public async Task<List<string>> GetNormal()
         {
-            var result = await RentProcess.GetAllNormal();
-            return result.Data;
+            try
+            {
+                var result = await RentProcess.GetAllNormal();
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return new List<string>();
+            }
+           
         }
 
 
         [HttpGet("{Id}")]
         public async Task<object> Get(int Id)
         {
-            var result = await RentProcess.GetByIdList(Id);
-            return result.Data;
+            try
+            {
+                var result = await RentProcess.GetByIdList(Id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return new List<string>();
+            }
+          
         }
         [HttpGet("Admin/{Id}")]
         public async Task<object> GetAdmin(int Id)
@@ -52,6 +82,10 @@ namespace MyApi.Controllers
             try
             {
                 var result = await RentProcess.GetByIdListAdmin(Id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
                 return result.Data;
             }catch(Exception ex)
             {
@@ -63,20 +97,35 @@ namespace MyApi.Controllers
         [HttpPost]
         public async void Add(RentHome rentHomeObject)
         {
-            await RentProcess.Add(rentHomeObject);
+            try
+            {
+                await RentProcess.Add(rentHomeObject);
+            }catch(Exception ex) { Console.WriteLine(ex.Message); }
+           
         }
         [HttpPut]
         public async void Update([FromBody] RentHome entity)
         {
-            await RentProcess.Update(entity);
+            try
+            {
+                await RentProcess.Update(entity);
+            }catch (Exception ex) { Console.WriteLine(ex); }
+           
         }
         [HttpDelete("{Id}")]
         public async void Delete(int Id)
         {
-            RentImgProcess.DeleteList(Id);
-            RentCustomerProcess.DeleteList(Id);
-            var entity = await RentProcess.GetById(Id);
-            RentProcess.Delete(entity.Data);
+            try
+            {
+                RentImgProcess.DeleteList(Id);
+                RentCustomerProcess.DeleteList(Id);
+                var entity = await RentProcess.GetById(Id);
+                RentProcess.Delete(entity.Data);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+           
         }
     }
 }

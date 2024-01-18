@@ -21,6 +21,7 @@ namespace Business.Concrete
         Access Access = new Access();
         AccessImg AccessImg = new AccessImg();
         AccessCustomer AccessCustomer = new AccessCustomer();
+        MediaOperation mediaOperation= new MediaOperation();
         public async Task<IResult> Add(RentHome Model)
         {
             string[] Check = { "Addition", "CoordinateX", "CoordinateY" };
@@ -57,6 +58,7 @@ namespace Business.Concrete
             if (allPropertiesNullOrWhiteSpace)
             {
                 Access.Add(Model);
+                //mediaOperation.MakeContact(Model);
                 return new SuccessResult(MyMessage.Success);
             }
             else
@@ -92,6 +94,10 @@ namespace Business.Concrete
         {
             var data = Access.GetById(x => x.Id == id);
             var img =await AccessImg.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
             var needData = new
             {
                 Id = data.Id,
@@ -135,6 +141,10 @@ namespace Business.Concrete
             var data = Access.GetById(x => x.Id == id);
             var img = await AccessImg.GetByIdList(id);
              var customer= await AccessCustomer.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
             var needData = new
             {
                 Id = data.Id,
@@ -169,7 +179,7 @@ namespace Business.Concrete
                 Girl = data.Girl,
                 WorkingBoy = data.WorkingBoy,
                 Family = data.Family,
-                IsCalledWithOwnFirstStep = data.IsCalledWithHomeOwnFirstStep,
+                IsCalledWithHomeOwnFirstStep = data.IsCalledWithHomeOwnFirstStep,
                 IsCalledWithCustomerFirstStep = data.IsCalledWithCustomerFirstStep,
                 IsPaidHomeOwnFirstStep = data.IsPaidHomeOwnFirstStep,
                 IsPaidCustomerFirstStep = data.IsPaidCustomerFirstStep,

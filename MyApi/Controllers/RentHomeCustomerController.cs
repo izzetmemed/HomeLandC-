@@ -29,21 +29,40 @@ namespace MyApi.Controllers
         [HttpGet("{Id}")]
         public async Task<SecondStepCustomer> Get(int Id)
         {
-            var data = await RentCustomerProcess.GetById(Id);
-            return data.Data;
+            try
+            {
+                var data = await RentCustomerProcess.GetById(Id);
+                return data.Data;
+            }catch (Exception ex) { 
+                Console.WriteLine(ex); 
+                return new SecondStepCustomer();
+            }
+           
         }
 
         [HttpPost]
         public void Add([FromBody] SecondStepCustomer entity)
         {
-            RentCustomerProcess.Add(entity);
+            try
+            {
+                RentCustomerProcess.Add(entity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            
         }
 
-        //[HttpPut]
-        //public void Update([FromBody] SecondStepCustomer entity)
-        //{
-        //    RentCustomerProcess.Update(entity);
-        //}
+        [HttpPut]
+        public void Update([FromBody] SecondStepCustomer entity)
+        {
+            try
+            {
+                RentCustomerProcess.Update(entity);
+            }catch(Exception ex) { Console.WriteLine(ex); }
+           
+        }
 
         //[HttpDelete("{Id}")]
         //public async void Delete(int Id)

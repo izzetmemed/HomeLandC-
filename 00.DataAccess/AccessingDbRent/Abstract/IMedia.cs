@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.AccessingDbRent.Abstract
 {
-    public interface IObyekt : IBaseRepository<Obyekt>, IBaseRepositoryGetAll<Obyekt>, IBaseRepositoryGetAllAdmin
+    internal interface IMedia:IBaseRepository<Medium>
     {
     }
 }

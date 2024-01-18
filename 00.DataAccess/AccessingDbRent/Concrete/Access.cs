@@ -21,16 +21,9 @@ namespace DataAccess.AccessingDb.Concrete
             {
                 var rentHomes = await context.Set<RentHome>().ToListAsync();
                 var imgNames = await context.Set<ImgName>().ToListAsync();
-                //var secondStepCustomers = await context.Set<SecondStepCustomer>().ToListAsync();
-
-
-
                 foreach (var rentHome in rentHomes)
                 {
                     rentHome.ImgNames =  imgNames.Where(img => img.ImgIdForeignId == rentHome.Id).ToList();
-                    //rentHome.SecondStepCustomers = secondStepCustomers
-                    //    .Where(customer => customer.SecondStepCustomerForeignId == rentHome.Id)
-                    //    .ToList();
                 }
 
                 var allData = rentHomes;
@@ -47,6 +40,7 @@ namespace DataAccess.AccessingDb.Concrete
                         Price=item.Price,
                         Item=item.İtem,
                         Region=item.Region,
+                        Building=item.Building,
                         Area=item.Area,
                         Date=item.Date,
                         Img = item.ImgNames.Select(x => x.ImgPath).ToList()

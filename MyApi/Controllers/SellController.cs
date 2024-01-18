@@ -1,4 +1,5 @@
-﻿using Business.Concrete;
+﻿using _00.DataAccess.AccessingDbRent.Abstract;
+using Business.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
@@ -16,20 +17,44 @@ namespace MyApi.Controllers
         [HttpGet]
         public async Task<List<string>> Get()
         {
-            var result = await sellOperation.GetAll();
-            return result.Data;
+            try
+            {
+                var result = await sellOperation.GetAll();
+                return result.Data;
+            }
+            catch
+            {
+                return new List<string>();
+            }
+           
         }
         [HttpGet("Normal")]
         public async Task<List<string>> GetNormal()
         {
-            var result = await sellOperation.GetAllNormal();
-            return result.Data;
+            try
+            {
+                var result = await sellOperation.GetAllNormal();
+                return result.Data;
+            }catch(Exception ex) { Console.WriteLine(ex.Message);return new List<string>(); }
+            
         }
         [HttpGet("{Id}")]
         public async Task<object> Get(int Id)
         {
-            var result = await sellOperation.GetByIdList(Id);
-            return result.Data;
+            try
+            {
+                var result = await sellOperation.GetByIdList(Id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
+                return result.Data;
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                return new object();
+            }
+            
         }
 
         [HttpGet("Admin/{Id}")]
@@ -38,6 +63,10 @@ namespace MyApi.Controllers
             try
             {
                 var result = await sellOperation.GetByIdListAdmin(Id);
+                if (result == null)
+                {
+                    return NotFound();
+                }
                 return result.Data;
             }
             catch (Exception ex)
@@ -49,20 +78,44 @@ namespace MyApi.Controllers
         [HttpPost]
         public async void Add( Sell sell)
         {
-           await sellOperation.Add(sell);
+            try
+            {
+                await sellOperation.Add(sell);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+
+            }
+          
         }
         [HttpDelete("{Id}")]
         public async void Delete(int Id)
         {
-            sellOperationImg.DeleteList(Id);
-            sellOperationCustomer.DeleteList(Id);
-            var entity = await sellOperation.GetById(Id);
-            sellOperation.Delete(entity.Data);
+            try
+            {
+                sellOperationImg.DeleteList(Id);
+                sellOperationCustomer.DeleteList(Id);
+                var entity = await sellOperation.GetById(Id);
+                sellOperation.Delete(entity.Data);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+
+            }
+           
         }
         [HttpPut]
         public void Update([FromBody] Sell sell)
         {
-            sellOperation.Update(sell);
+            try
+            {
+                sellOperation.Update(sell);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
         }
 
     }

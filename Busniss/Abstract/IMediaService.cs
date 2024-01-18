@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IObyektServiceCustomer:IGenericService<ObyektSecondStepCustomer>, IGenericServiceDeleteList
+    internal interface IMediaService:IGenericService<Medium>
     {
     }
 }

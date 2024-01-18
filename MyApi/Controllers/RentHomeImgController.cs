@@ -18,14 +18,16 @@ namespace MyApi.Controllers
     public class RentHomeImgController : ControllerBase
     {
         public RentHomeOperation RentHome;
-        public IRentHomeServiceImg RentImgProcess;
+        public RentHomeOperationImg RentImgProcess;
         public ImgName ImgNameProperty;
+        public RentHomeOperationCustomer rentHomeOperationCustomer;
 
         public RentHomeImgController()
         {
             RentImgProcess = new RentHomeOperationImg();
             ImgNameProperty = new ImgName();
             RentHome = new RentHomeOperation();
+            rentHomeOperationCustomer = new RentHomeOperationCustomer();
         }
 
 
@@ -44,6 +46,7 @@ namespace MyApi.Controllers
 
             var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
             var cloudinary = new Cloudinary(cloudinaryAccount);
+
             async Task<int> GetLastId()
             {
                 var items = await RentHome.GetAll();
@@ -64,7 +67,7 @@ namespace MyApi.Controllers
                 }
             }
             var LastId =await GetLastId();
-            {
+            
                 if (image == null || image.Capacity == 0)
                 {
                     return BadRequest("No image provided");
@@ -72,12 +75,12 @@ namespace MyApi.Controllers
 
                 try
                 {
-                   for (var i = 0; i < image.Capacity; i++)
+                   for (var i = 0; i < image.Count; i++)
                     {
                         string uniqueFilename = Guid.NewGuid().ToString("N");
                         string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
 
-                        var uploadResult = UploadImageAndGetPath(cloudinary, image[i], cloudinaryImagePath);
+                        var uploadResult =  UploadImageAndGetPath(cloudinary, image[i], cloudinaryImagePath);
                         RentImgProcess.Add(new ImgName
                         {
                             ImgPath = cloudinaryImagePath,
@@ -85,11 +88,11 @@ namespace MyApi.Controllers
                         });
 
                     }
+              
 
 
 
-
-                    return  Ok(new { Message = "Image uploaded successfully" });
+                return  Ok(new { Message = "Image uploaded successfully" });
                 }
                 catch (Exception ex)
                 {
@@ -97,7 +100,7 @@ namespace MyApi.Controllers
                 }
 
                 
-            }
+            
         }
         static string UploadImageAndGetPath(Cloudinary cloudinary, IFormFile image, string cloudinaryImagePath)
         {
@@ -140,7 +143,8 @@ namespace MyApi.Controllers
                     List<string> imageUrls = new List<string>();
                     foreach (var imgName in SplitDataDownloadImages)
                     {
-                        string imageUrl = $"https://res.cloudinary.com/{cloudName}/{imgName}";
+           
+                        string imageUrl = $" https://res.cloudinary.com/{cloudName}/image/upload/c_scale,q_auto,f_auto/{imgName}";
                         imageUrls.Add(imageUrl);
                     }
 
@@ -153,6 +157,49 @@ namespace MyApi.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+        [HttpPut("{Id}")]
+        public async Task<IActionResult> Update(int Id)
+        {
+            try
+            {
+                var ListImg = await RentImgProcess.GetByIdList(Id);
+                async Task<int> GetLastId()
+                {
+                    var items = await RentHome.GetAll();
 
+                    if (items.Data.Any())
+                    {
+                        var lastItem = items.Data.FirstOrDefault();
+                        var RentHome = JsonSerializer.Deserialize<RentHome>(lastItem);
+
+
+
+
+                        return RentHome.Id;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                var LastId = await GetLastId();
+                foreach (var item in ListImg.Data)
+                {
+                    item.ImgIdForeignId = LastId;
+                    RentImgProcess.Update(item);
+                }
+               var Customer=await rentHomeOperationCustomer.GetByIdList(Id);
+                foreach (var item in Customer.Data)
+                {
+                    item.SecondStepCustomerForeignId = LastId;
+                    rentHomeOperationCustomer.Update(item);
+                }
+                return Ok();
+            }catch(Exception ex)
+            {
+                return BadRequest("Put img");
+            }
+          
+        }
     }
 }

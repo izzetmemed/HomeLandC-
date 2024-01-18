@@ -19,10 +19,12 @@ namespace Business.Concrete
     {
         public ObyektAccess obyektAccess;
         public ObyektAccessImg obyektAccessImg;
+        public ObyectAccessCustomer obyectAccessCustomer;
         public ObyektOperation()
         {
             obyektAccess = new ObyektAccess();
             obyektAccessImg = new ObyektAccessImg();
+            obyectAccessCustomer=new ObyectAccessCustomer();
         }
         public async Task<IResult> Add(Obyekt Model)
         {
@@ -80,6 +82,11 @@ namespace Business.Concrete
             return new SuccessDataResult<List<string>>(await obyektAccess.GetAll());
         }
 
+        public async Task<IDataResult<List<string>>> GetAllNormal()
+        {
+            return new SuccessDataResult<List<string>>(await obyektAccess.GetAllNormal());
+        }
+
         public async Task<IDataResult<Obyekt>> GetById(int id)
         {
             return new SuccessDataResult<Obyekt>(obyektAccess.GetById(x => x.Id == id));
@@ -89,6 +96,10 @@ namespace Business.Concrete
         {
             var data = obyektAccess.GetById(x => x.Id == id);
             var img = await obyektAccessImg.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
             var needData = new
             {
                 Id = data.Id,
@@ -107,6 +118,46 @@ namespace Business.Concrete
                 Document = data.Document,
                 SellorRent = data.SellOrRent,
                 Img = img.Select(x => x.ImgPath).ToList()
+            };
+
+            return new SuccessDataResult<object>(needData);
+        }
+
+        public async Task<IDataResult<object>> GetByIdListAdmin(int id)
+        {
+            var data = obyektAccess.GetById(x => x.Id == id);
+            var img = await obyektAccessImg.GetByIdList(id);
+            var customer = await obyectAccessCustomer.GetByIdList(id);
+            if (data == null)
+            {
+                return null;
+            }
+            var needData = new
+            {
+                Id = data.Id,
+                Address = data.Address,
+                Room = data.Room,
+                Metro = data.Metro,
+                Price = data.Price,
+                İtem = data.İtem,
+                Region = data.Region,
+                Area = data.Area,
+                Number = data.Number,
+                Date = data.Date,
+                Fullname = data.Fullname,
+                CoordinateX = data.CoordinateX,
+                CoordinateY = data.CoordinateY,
+                Repair = data.Repair,
+                Addition = data.Addition,
+                Document = data.Document,
+                SellorRent = data.SellOrRent,
+                IsCalledWithHomeOwnFirstStep = data.IsCalledWithHomeOwnFirstStep,
+                IsCalledWithCustomerFirstStep = data.IsCalledWithCustomerFirstStep,
+                IsPaidHomeOwnFirstStep = data.IsPaidHomeOwnFirstStep,
+                IsPaidCustomerFirstStep = data.IsPaidCustomerFirstStep,
+                IsCalledWithHomeOwnThirdStep = data.IsCalledWithHomeOwnThirdStep,
+                Img = img.Select(x => x.ImgPath).ToList(),
+                Customer = customer.ToList(),
             };
 
             return new SuccessDataResult<object>(needData);

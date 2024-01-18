@@ -40,6 +40,10 @@ namespace Business.Concrete
             return new SuccessDataResult<SecondStepCustomer>(AccessCustomer.GetById(x => x.SecondStepCustomerId == id));
         }
 
+        public async Task<IDataResult<List<SecondStepCustomer>>> GetByIdList(int id)
+        {
+            return new SuccessDataResult<List<SecondStepCustomer>>(await AccessCustomer.GetByIdList(id));
+        }
         public async Task<IResult> Update(SecondStepCustomer Model)
         {
             AccessCustomer.Update(Model);

@@ -1,4 +1,4 @@
-﻿using DataAccess.Repository;
+﻿using Core;
 using Model.Models;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IRentHomeServiceImg : IGenericService<ImgName>
+    public interface IUserService<T>
     {
+        IResult Add(T Model);
+        IDataResult<T> GetByName(string Name);
+        IDataResult<List<UserModel>> GetAll();
     }
 }

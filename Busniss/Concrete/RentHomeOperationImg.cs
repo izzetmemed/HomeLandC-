@@ -44,9 +44,12 @@ namespace Business.Concrete
 
         public async Task<IDataResult<ImgName>> GetById(int id)
         {
-            return new SuccessDataResult<ImgName>(AccessImg.GetById(x => x.ImgIdForeignId == id));
+            return new SuccessDataResult<ImgName>(AccessImg.GetById(x => x.ImgId== id));
         }
-
+        public async Task<IDataResult<List<ImgName>>> GetByIdList(int id)
+        {
+            return new SuccessDataResult<List<ImgName>>(await AccessImg.GetByIdList(id));
+        }
         public async Task<IResult> Update(ImgName Model)
         {
             AccessImg.Update(Model);

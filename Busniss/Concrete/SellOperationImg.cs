@@ -50,7 +50,10 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<SellImg>(sellAccessImg.GetById(x => x.ImgIdForeignId == id));
         }
-
+        public async Task<IDataResult<List<SellImg>>> GetByIdList(int id)
+        {
+            return new SuccessDataResult<List<SellImg>>(await sellAccessImg.GetByIdList(id));
+        }
         public async Task<IResult> Update(SellImg Model)
         {
             sellAccessImg.Update(Model);
