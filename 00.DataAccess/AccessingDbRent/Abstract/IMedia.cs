@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 
 namespace DataAccess.AccessingDbRent.Abstract
 {
-    internal interface IMedia:IBaseRepository<Medium>
+    internal interface IMedia
     {
+        Task<List<MediaType>> GetAll();
+        Task<List<MediaType>> GetAllRent(RentHome data);
+        Task<List<MediaType>> GetAllSell(Sell data);
+        Task<List<MediaType>> GetAllObyekt(Obyekt data);
     }
 }

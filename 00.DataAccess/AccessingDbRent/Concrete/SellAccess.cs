@@ -60,6 +60,33 @@ namespace DataAccess.AccessingDbRent.Concrete
             }
         }
 
+        public async Task<List<string>> GetAllCoordinate()
+        {
+            using (MyDbContext context = new MyDbContext())
+            {
+                var rentHomes = await context.Set<Sell>().ToListAsync();
+
+
+                var allData = rentHomes;
+                List<string> data = new List<string>();
+
+                foreach (var item in allData)
+                {
+                    var needData = new
+                    {
+                        Id = item.Id,
+                        CoordinateX = item.CoordinateX,
+                        CoordinateY = item.CoordinateY,
+
+                    };
+                    string jsonData = JsonSerializer.Serialize(needData);
+                    data.Add(jsonData);
+                }
+                data.Reverse();
+                return data;
+            }
+        }
+
         public async Task<List<string>> GetAllNormal()
         {
             using (MyDbContext context = new MyDbContext())
@@ -99,6 +126,7 @@ namespace DataAccess.AccessingDbRent.Concrete
                         Metro = item.Metro,
                         Price = item.Price,
                         Item = item.İtem,
+                        Document=item.Document,
                         Region = item.Region,
                         Area = item.Area,
                         Date = item.Date,

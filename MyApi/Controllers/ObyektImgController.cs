@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Model.Models;
 using _00.DataAccess.AccessingDbRent.Abstract;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyApi.Controllers
 {
@@ -158,7 +159,7 @@ namespace MyApi.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
-
+        [Authorize]
         [HttpPut("{Id}")]
         public async Task<IActionResult> Update(int Id)
         {

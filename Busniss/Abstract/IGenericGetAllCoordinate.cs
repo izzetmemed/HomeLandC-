@@ -1,5 +1,4 @@
 ﻿using Core;
-using Model.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IMediaService
+    public interface IGenericGetAllCoordinate
     {
-        Task<List<MediaType>> GetAll();
-        IResult Update(MediaType Model);
-
+        Task<IDataResult<List<string>>> GetAllCoordinate();
     }
 }

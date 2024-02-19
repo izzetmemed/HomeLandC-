@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Model.Models;
 using System.Text.Json;
 using DataAccess.AccessingDbRent.Concrete;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyApi.Controllers
 {
@@ -152,7 +153,7 @@ namespace MyApi.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpPut("{Id}")]
         public async Task<IActionResult> Update(int Id)
         {

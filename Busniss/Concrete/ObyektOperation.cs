@@ -20,11 +20,13 @@ namespace Business.Concrete
         public ObyektAccess obyektAccess;
         public ObyektAccessImg obyektAccessImg;
         public ObyectAccessCustomer obyectAccessCustomer;
+        public MediaOperation mediaOperation;
         public ObyektOperation()
         {
             obyektAccess = new ObyektAccess();
             obyektAccessImg = new ObyektAccessImg();
             obyectAccessCustomer=new ObyectAccessCustomer();
+            mediaOperation = new MediaOperation();
         }
         public async Task<IResult> Add(Obyekt Model)
         {
@@ -63,6 +65,7 @@ namespace Business.Concrete
             if (allPropertiesNullOrWhiteSpace)
             {
                 obyektAccess.Add(Model);
+                mediaOperation.MakeContactObyekt(Model);
                 return new SuccessResult(MyMessage.Success);
             }
             else
@@ -80,6 +83,11 @@ namespace Business.Concrete
         public async Task<IDataResult<List<string>>> GetAll()
         {
             return new SuccessDataResult<List<string>>(await obyektAccess.GetAll());
+        }
+
+        public async Task<IDataResult<List<string>>> GetAllCoordinate()
+        {
+            return new SuccessDataResult<List<string>>(await obyektAccess.GetAllCoordinate());
         }
 
         public async Task<IDataResult<List<string>>> GetAllNormal()

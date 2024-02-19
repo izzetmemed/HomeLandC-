@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IRentHomeService : IGenericService<RentHome>,IGenricServiceGetByIdObject,IGenericServiceGetAllNormal,IGenericServiceGetByIdAdmin
+    public interface IRentHomeService : IGenericService<RentHome>,IGenricServiceGetByIdObject,IGenericServiceGetAllNormal,IGenericServiceGetByIdAdmin,IGenericGetAllCoordinate
     {
     }
 }

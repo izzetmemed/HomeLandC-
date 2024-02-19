@@ -18,12 +18,16 @@ namespace Model.Contexts
         {
         }
 
+        public virtual DbSet<Building> Buildings { get; set; } = null!;
         public virtual DbSet<ImgName> ImgNames { get; set; } = null!;
-        public virtual DbSet<Medium> Media { get; set; } = null!;
+        public virtual DbSet<MediaType> MediaTypes { get; set; } = null!;
+        public virtual DbSet<Metro> Metros { get; set; } = null!;
         public virtual DbSet<Obyekt> Obyekts { get; set; } = null!;
         public virtual DbSet<ObyektImg> ObyektImgs { get; set; } = null!;
         public virtual DbSet<ObyektSecondStepCustomer> ObyektSecondStepCustomers { get; set; } = null!;
+        public virtual DbSet<Region> Regions { get; set; } = null!;
         public virtual DbSet<RentHome> RentHomes { get; set; } = null!;
+        public virtual DbSet<Room> Rooms { get; set; } = null!;
         public virtual DbSet<SecondStepCustomer> SecondStepCustomers { get; set; } = null!;
         public virtual DbSet<Sell> Sells { get; set; } = null!;
         public virtual DbSet<SellImg> SellImgs { get; set; } = null!;
@@ -34,18 +38,31 @@ namespace Model.Contexts
         {
             if (!optionsBuilder.IsConfigured)
             {
-
                 IConfiguration configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .Build();
-                string password = configuration["Password:DbContext"];
-                optionsBuilder.UseSqlServer(password);
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+                string ConnectionString = configuration["Password:DbContext"];
+                optionsBuilder.UseSqlServer(ConnectionString);
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Building>(entity =>
+            {
+                entity.ToTable("Building");
+
+                entity.Property(e => e.BuildingKind).HasMaxLength(50);
+
+                entity.HasOne(d => d.BuildingForeign)
+                    .WithMany(p => p.Buildings)
+                    .HasForeignKey(d => d.BuildingForeignId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Building__Buildi__1D7B6025");
+            });
+
             modelBuilder.Entity<ImgName>(entity =>
             {
                 entity.HasKey(e => e.ImgId)
@@ -63,19 +80,34 @@ namespace Model.Contexts
                     .HasConstraintName("FK__ImgName__ImgIdFo__3D2915A8");
             });
 
-            modelBuilder.Entity<Medium>(entity =>
+            modelBuilder.Entity<MediaType>(entity =>
             {
-                entity.Property(e => e.Building).HasMaxLength(50);
+                entity.ToTable("MediaType");
 
-                entity.Property(e => e.Metro).HasMaxLength(50);
+                entity.Property(e => e.Counter)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
-                entity.Property(e => e.Number).HasMaxLength(30);
+                entity.Property(e => e.Number)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
-                entity.Property(e => e.Region).HasMaxLength(50);
+                entity.Property(e => e.Type)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
 
-                entity.Property(e => e.SellOrRent).HasMaxLength(30);
+            modelBuilder.Entity<Metro>(entity =>
+            {
+                entity.ToTable("Metro");
 
-                entity.Property(e => e.Type).HasMaxLength(50);
+                entity.Property(e => e.MetroName).HasMaxLength(50);
+
+                entity.HasOne(d => d.MetroForeign)
+                    .WithMany(p => p.Metros)
+                    .HasForeignKey(d => d.MetroForeignId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Metro__MetroFore__1A9EF37A");
             });
 
             modelBuilder.Entity<Obyekt>(entity =>
@@ -159,6 +191,19 @@ namespace Model.Contexts
                     .HasConstraintName("FK__ObyektSec__Secon__5224328E");
             });
 
+            modelBuilder.Entity<Region>(entity =>
+            {
+                entity.ToTable("Region");
+
+                entity.Property(e => e.RegionName).HasMaxLength(50);
+
+                entity.HasOne(d => d.RegionForeign)
+                    .WithMany(p => p.Regions)
+                    .HasForeignKey(d => d.RegionForeignId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Region__RegionFo__2057CCD0");
+            });
+
             modelBuilder.Entity<RentHome>(entity =>
             {
                 entity.ToTable("RentHome");
@@ -230,6 +275,17 @@ namespace Model.Contexts
                 entity.Property(e => e.WorkingBoy).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.İtem).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<Room>(entity =>
+            {
+                entity.ToTable("Room");
+
+                entity.HasOne(d => d.RoomForeign)
+                    .WithMany(p => p.Rooms)
+                    .HasForeignKey(d => d.RoomForeignId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Room__RoomForeig__2334397B");
             });
 
             modelBuilder.Entity<SecondStepCustomer>(entity =>
@@ -346,6 +402,14 @@ namespace Model.Contexts
                 entity.Property(e => e.LastName)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.RefreshToken)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TokenCreated).HasColumnType("datetime");
+
+                entity.Property(e => e.TokenExpires).HasColumnType("datetime");
 
                 entity.Property(e => e.UserName)
                     .HasMaxLength(50)

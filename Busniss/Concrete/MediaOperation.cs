@@ -1,45 +1,185 @@
 ﻿using Business.Abstract;
 using Business.Message;
 using Core;
+using DataAccess.AccessingDb.Concrete;
 using DataAccess.AccessingDbRent.Concrete;
 using Model.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
 namespace Business.Concrete
 {
-    public class MediaOperation
+    public class MediaOperation:IMediaService
     {
         public MediaAccess media = new MediaAccess();
-        public async Task<IResult> Add( Medium Model)
+        public Access RentHome=  new Access();
+        public SellAccess sellAccess = new SellAccess();
+        public ObyektAccess obyektAccess = new ObyektAccess();
+        public async Task<IResult> Add( MediaType Model)
         {
-           media.Add(Model);
-            return new SuccessResult(MyMessage.Success);
-        }
-        public async void MakeContact(RentHome data)
-        {
-           var Data= await media.GetAllNormal(data);
-            for (int i = 0; i < Data.Count; i++)
+            if (Regex.IsMatch(Model.Number, @"^\S+@\S+\.\S+$"))
             {
-                const string accountSid = "SK2da7845fe160556b686ae8ee76116a95"; 
-                const string authToken = "KkxJkzYvAKXyxzwn4GOTWrUYiQ1VWCqG";   
-
-                TwilioClient.Init(accountSid, authToken);
-
-                var message = MessageResource.Create(
-                   body: $"Sizin axtarışınıza uyğun yeni ev yüklənildi. Baxmaq üçün http://localhost:3000/Kind/{data.Id}",
-                    from: new Twilio.Types.PhoneNumber("0705715610"),
-                    to: new Twilio.Types.PhoneNumber(Data[i].Number) 
-                );
-
-                Console.WriteLine(message.Sid);
+                media.Add(Model);
             }
 
+            return new SuccessResult(MyMessage.Success);
+        }
+
+        public async Task<List<MediaType>> GetAll()
+        {
+
+            return await media.GetAll();
+        }
+
+        public async void MakeContact(RentHome data)
+        {
+            async Task<int> GetLastId()
+            {
+                var items = await RentHome.GetAll();
+
+                if (items.Any())
+                {
+                    var lastItem = items.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<RentHome>(lastItem);
+
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            var LastId = await GetLastId();
+            var Data= await media.GetAllRent(data);
+            for (int i = 0; i < Data.Count; i++)
+            {
+               
+                SendEmail(int.Parse(Data[i].Counter), Data[i].Number, LastId, "https://HomeLand.az/Kart/");
+                this.Update(Data[i]);
+                await Task.Delay(1000);
+                if(i == 2)
+                {
+                    break;
+                }
+            }
+           
+        }
+        public async void MakeContactObyekt(Obyekt data)
+        {
+            async Task<int> GetLastId()
+            {
+                var items = await obyektAccess.GetAll();
+
+                if (items.Any())
+                {
+                    var lastItem = items.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<Obyekt>(lastItem);
+
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            var LastId = await GetLastId();
+            var Data = await media.GetAllObyekt(data);
+            for (int i = 0; i < Data.Count; i++)
+            {
+
+                SendEmail(int.Parse(Data[i].Counter), Data[i].Number, LastId, "https://HomeLand.az/Obyekt/Kart/");
+                this.Update(Data[i]);
+                await Task.Delay(1000);
+                if (i == 2)
+                {
+                    break;
+                }
+            }
+
+        }
+        public async void MakeContactSell(Sell data)
+        {
+            async Task<int> GetLastId()
+            {
+                var items = await sellAccess.GetAll();
+
+                if (items.Any())
+                {
+                    var lastItem = items.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<Sell>(lastItem);
+
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            var LastId = await GetLastId();
+            var Data = await media.GetAllSell(data);
+            for (int i = 0; i < Data.Count; i++)
+            {
+
+                SendEmail(int.Parse(Data[i].Counter), Data[i].Number, LastId, "https://HomeLand.az/Sell/Kart/");
+                this.Update(Data[i]);
+                await Task.Delay(1000);
+                if (i == 2)
+                {
+                    break;
+                }
+            }
+
+        }
+        public IResult Update(MediaType Model)
+        {
+            Model.Counter=(int.Parse(Model.Counter)-1).ToString();
+            media.Update(Model);
+            return new SuccessResult("Update Media");
+        }
+
+        private void SendEmail(int count, string Number, int id,string Link)
+        {
+
+            string fromEmail = "homeland.az.service@gmail.com";
+            string toEmail = Number; 
+            string subject = "HomeLand.az";
+            string body = $"Sizə uğun yeni elan yükləndi. Tarix: {DateTime.Now.ToString("M/d/yyyy h:mm")}" + Environment.NewLine+
+                        $"Elanı görmək üçün keçid edin. {Link}{id}  "+ Environment.NewLine +
+                $"Sizə göndərəcəyimiz elan sayı: {count}.";
+            try
+            {
+                using (System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient("smtp.gmail.com"))
+                {
+                    smtp.Port = 587;
+                    smtp.Credentials = new System.Net.NetworkCredential("homeland.az.service@gmail.com", "dvmq vowb frps tsye");
+                    smtp.EnableSsl = true;
+
+                    using (System.Net.Mail.MailMessage mailMessage = new System.Net.Mail.MailMessage(fromEmail, toEmail, subject, body))
+                    {
+                        smtp.Send(mailMessage);
+                    }
+                }
+            }catch(Exception ex)
+            {
+                Console.WriteLine("Gmail is wrong");
+            }
+           
         }
 
     }

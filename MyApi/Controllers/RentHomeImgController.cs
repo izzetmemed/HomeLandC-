@@ -3,6 +3,7 @@ using Business.Abstract;
 using Business.Concrete;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
@@ -157,6 +158,7 @@ namespace MyApi.Controllers
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+        [Authorize]
         [HttpPut("{Id}")]
         public async Task<IActionResult> Update(int Id)
         {

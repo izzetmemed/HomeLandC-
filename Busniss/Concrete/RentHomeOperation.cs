@@ -58,7 +58,7 @@ namespace Business.Concrete
             if (allPropertiesNullOrWhiteSpace)
             {
                 Access.Add(Model);
-                //mediaOperation.MakeContact(Model);
+                mediaOperation.MakeContact(Model);
                 return new SuccessResult(MyMessage.Success);
             }
             else
@@ -78,6 +78,11 @@ namespace Business.Concrete
         public async Task<IDataResult<List<string>>> GetAll()
         {
             return new SuccessDataResult<List<string>>( await Access.GetAll());
+        }
+
+        public async Task<IDataResult<List<string>>> GetAllCoordinate()
+        {
+            return new SuccessDataResult<List<string>>(await Access.GetAllCoordinate());
         }
 
         public async Task<IDataResult<List<string>>> GetAllNormal()

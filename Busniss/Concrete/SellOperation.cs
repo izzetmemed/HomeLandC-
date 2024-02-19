@@ -18,6 +18,7 @@ namespace Business.Concrete
         SellAccess sellAccess = new SellAccess();
         SellAccessImg sellAccessImg=new SellAccessImg();
         SellAccessCustomer sellAccessCustomer = new SellAccessCustomer();
+        MediaOperation mediaOperation=new MediaOperation();
         public async Task<IResult> Add(Sell Model)
         {
             string[] Check = { "Addition", "CoordinateX", "CoordinateY" };
@@ -55,6 +56,7 @@ namespace Business.Concrete
             if (allPropertiesNullOrWhiteSpace)
             {
                 sellAccess.Add(Model);
+                mediaOperation.MakeContactSell(Model);
                 return new SuccessResult(MyMessage.Success);
             }
             else
@@ -73,7 +75,10 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<List<string>>(await sellAccess.GetAll());
         }
-
+        public async Task<IDataResult<List<string>>> GetAllCoordinate()
+        {
+            return new SuccessDataResult<List<string>>(await sellAccess.GetAllCoordinate());
+        }
         public async Task<IDataResult<List<string>>> GetAllNormal()
         {
             return new SuccessDataResult<List<string>>(await sellAccess.GetAllNormal());

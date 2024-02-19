@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace _00.DataAccess.AccessingDb.Abstract
 {
-    public interface IAccess : IBaseRepository<RentHome>, IBaseRepositoryGetAll<RentHome>,IBaseRepositoryGetAllAdmin
+    public interface IAccess : IBaseRepository<RentHome>, IBaseRepositoryGetAll<RentHome>,IBaseRepositoryGetAllAdmin, IBaseRepositoryGetAllCoordinate
     {
 
     }

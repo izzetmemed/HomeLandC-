@@ -1,4 +1,5 @@
 ﻿using Business.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
@@ -25,6 +26,7 @@ namespace MyApi.Controllers
         //{
         //    return sellOperationCustomer.GetById(Id).Data;
         //}
+        [Authorize]
         [HttpPost]
         public void Add([FromBody] SellSecondStepCustomer entity)
         {
@@ -34,6 +36,7 @@ namespace MyApi.Controllers
             }catch (Exception ex) { Console.WriteLine(ex); }
            
         }
+        [Authorize]
         [HttpPut]
         public void Update([FromBody] SellSecondStepCustomer entity)
         {

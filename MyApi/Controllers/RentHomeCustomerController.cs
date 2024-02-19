@@ -1,6 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Concrete;
 using DataAccess.AccessingDbRent.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
@@ -25,7 +26,7 @@ namespace MyApi.Controllers
         //    var data =await RentCustomerProcess.GetAll();
         //    return data.Data;
         //}
-
+        [Authorize]
         [HttpGet("{Id}")]
         public async Task<SecondStepCustomer> Get(int Id)
         {
@@ -39,7 +40,7 @@ namespace MyApi.Controllers
             }
            
         }
-
+        [Authorize]
         [HttpPost]
         public void Add([FromBody] SecondStepCustomer entity)
         {
@@ -53,7 +54,7 @@ namespace MyApi.Controllers
             }
             
         }
-
+        [Authorize]
         [HttpPut]
         public void Update([FromBody] SecondStepCustomer entity)
         {

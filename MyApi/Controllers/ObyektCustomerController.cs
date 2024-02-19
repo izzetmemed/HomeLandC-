@@ -1,5 +1,6 @@
 ﻿using Business.Abstract;
 using Business.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
@@ -28,7 +29,7 @@ namespace MyApi.Controllers
         //{
         //    return RentCustomerProcess.GetById(Id).Data;
         //}
-
+        [Authorize]
         [HttpPost]
         public void Add([FromBody] ObyektSecondStepCustomer entity)
         {
@@ -38,7 +39,7 @@ namespace MyApi.Controllers
             }catch (Exception ex) { Console.WriteLine(ex); }
            
         }
-
+        [Authorize]
         [HttpPut]
         public void Update([FromBody] ObyektSecondStepCustomer entity)
         {
