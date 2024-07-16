@@ -4,12 +4,14 @@ using CloudinaryDotNet.Actions;
 using Core;
 using DataAccess.AccessingDb.Concrete;
 using DataAccess.AccessingDbRent.Concrete;
+using Model.DTOmodels;
 using Model.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,13 +20,20 @@ namespace Business.Concrete
 {
     public class RentHomeOperation : IRentHomeService
     {
-        Access Access = new Access();
-        AccessImg AccessImg = new AccessImg();
-        AccessCustomer AccessCustomer = new AccessCustomer();
-        MediaOperation mediaOperation= new MediaOperation();
+        Access Access;
+        AccessImg AccessImg;
+        AccessCustomer AccessCustomer;
+        MediaOperation mediaOperation;
+        public RentHomeOperation()
+        {
+            Access = new Access();
+            AccessImg = new AccessImg();
+            AccessCustomer = new AccessCustomer();
+            mediaOperation = new MediaOperation();
+        }
         public async Task<IResult> Add(RentHome Model)
         {
-            string[] Check = { "Addition", "CoordinateX", "CoordinateY" };
+            string[] Check = { "Addition","CoordinateX", "CoordinateY" };
 
             bool allPropertiesNullOrWhiteSpace = true;
 
@@ -67,17 +76,15 @@ namespace Business.Concrete
             }
         }
 
-
-
         public async Task<IResult> Delete(RentHome Model)
         {
             Access.Delete(Model);
             return new SuccessResult(MyMessage.Success);
         }
 
-        public async Task<IDataResult<List<string>>> GetAll()
+        public async Task<IDataResult<List<string>>> GetAll(Expression<Func<RentHome, bool>>? predicate = null)
         {
-            return new SuccessDataResult<List<string>>( await Access.GetAll());
+            return new SuccessDataResult<List<string>>( await Access.GetAll(predicate));
         }
 
         public async Task<IDataResult<List<string>>> GetAllCoordinate()
@@ -85,9 +92,43 @@ namespace Business.Concrete
             return new SuccessDataResult<List<string>>(await Access.GetAllCoordinate());
         }
 
-        public async Task<IDataResult<List<string>>> GetAllNormal()
+        public async Task<IDataResult<SearchDTO>> GetAllCustomerNumber( string CNumber)
         {
-            return new SuccessDataResult<List<string>>(await Access.GetAllNormal());
+            var result = await Access.GetAllNormal(1,x => x.SecondStepCustomers.Any(y => y.Number == CNumber));
+            return new SuccessDataResult<SearchDTO>(result);
+        }
+
+
+
+        public async Task<IDataResult<SearchDTO>> GetAllId(int id)
+        {
+            return new SuccessDataResult<SearchDTO>(await Access.GetAllNormal(1,x=>x.Id==id));
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllNormal( int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await Access.GetAllNormal(Page));
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllOwnNumber( string ONumber)
+        {
+            var result = await Access.GetAllNormal(1,x => x.Number==ONumber);
+            return new SuccessDataResult<SearchDTO>(result);
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllPage(int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await Access.GetAllPage(Page));
+        }
+
+        public async Task<IDataResult<List<string>>> GetAllRecommend()
+        {
+            return new SuccessDataResult<List<string>>(await Access.GetAllRecommend());
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllSearch(SearchModel searchModel, int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await Access.GetAllSearch(searchModel, Page));
         }
 
         public async Task<IDataResult<RentHome>> GetById(int id)
@@ -103,14 +144,17 @@ namespace Business.Concrete
             {
                 return null;
             }
+            data.Looking = data.Looking + 1;
+            await this.Update(data);
             var needData = new
             {
                 Id = data.Id,
                 Address = data.Address,
                 Room = data.Room,
                 Metro = data.Metro,
+                Looking=data.Looking,
                 Price = data.Price,
-                Item = data.İtem,
+                Item = data.Item,
                 Region = data.Region,
                 Area = data.Area,
                 Date = data.Date,
@@ -155,12 +199,15 @@ namespace Business.Concrete
                 Id = data.Id,
                 Address = data.Address,
                 Room = data.Room,
+                Looking = data.Looking,
+                Email =data.Email,
                 Metro = data.Metro,
                 Price = data.Price,
-                İtem = data.İtem,
+                Item = data.Item,
                 Region = data.Region,
                 Area = data.Area,
                 Number=data.Number,
+                Recommend = data.Recommend,
                 Date = data.Date,
                 Fullname = data.Fullname,
                 Floor = data.Floor,

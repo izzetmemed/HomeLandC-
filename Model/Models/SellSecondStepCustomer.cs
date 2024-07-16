@@ -10,6 +10,7 @@ namespace Model.Models
         public string? FullName { get; set; }
         public string? Number { get; set; }
         public DateTime? DirectCustomerDate { get; set; }
+        public string? Email { get; set; }
 
         public virtual Sell? SecondStepCustomerForeign { get; set; }
     }

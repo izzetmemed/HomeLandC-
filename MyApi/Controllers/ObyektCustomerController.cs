@@ -13,22 +13,11 @@ namespace MyApi.Controllers
     {
         public ObyektOperationCustomer RentCustomerProcess { get; set; }
 
-        public ObyektCustomerController()
+        public ObyektCustomerController(ObyektOperationCustomer obyektOperationCustomer)
         {
-            RentCustomerProcess = new ObyektOperationCustomer();
+            RentCustomerProcess = obyektOperationCustomer;
         }
 
-        //[HttpGet]
-        //public List<ObyektSecondStepCustomer> Get()
-        //{
-        //    return RentCustomerProcess.GetAll().Data;
-        //}
-
-        //[HttpGet("{Id}")]
-        //public ObyektSecondStepCustomer Get(int Id)
-        //{
-        //    return RentCustomerProcess.GetById(Id).Data;
-        //}
         [Authorize]
         [HttpPost]
         public void Add([FromBody] ObyektSecondStepCustomer entity)
@@ -50,12 +39,5 @@ namespace MyApi.Controllers
             catch (Exception ex) { Console.WriteLine(ex); }
            
         }
-
-        //[HttpDelete("{Id}")]
-        //public void Delete(int Id)
-        //{
-        //    var entity = RentCustomerProcess.GetById(Id).Data;
-        //    RentCustomerProcess.Delete(entity);
-        //}
     }
 }

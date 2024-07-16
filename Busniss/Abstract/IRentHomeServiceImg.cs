@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IRentHomeServiceImg : IGenericService<ImgName>
+    public interface IRentHomeServiceImg : IGenericService<ImgName>, IGenericGetAll,IGenericServiceGetByIdList<ImgName>,IGenericServiceDeleteList
     {
     }
 }

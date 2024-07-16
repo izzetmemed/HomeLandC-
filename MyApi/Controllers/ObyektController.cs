@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Model.DTOmodels;
 
 namespace MyApi.Controllers
 {
@@ -17,19 +19,21 @@ namespace MyApi.Controllers
         public ObyektOperationCustomer RentCustomerProcess { get; set; }
         public ObyektOperation RentProcess { get; set; }
         public ObyektOperationImg RentImgProcess { get; set; }
+        public Cloudinary cloudinary { get; set; }
 
-        public ObyektController()
+        public ObyektController(Cloudinary cloudinaryNew, ObyektOperationCustomer obyektOperationCustomer, ObyektOperation obyektOperation, ObyektOperationImg obyektOperationImg)
         {
-            RentCustomerProcess = new ObyektOperationCustomer();
-            RentProcess = new ObyektOperation();
-            RentImgProcess = new ObyektOperationImg();
+            RentCustomerProcess = obyektOperationCustomer;
+            RentProcess = obyektOperation;
+            RentImgProcess = obyektOperationImg;
+            cloudinary = cloudinaryNew;
         }
-        [HttpGet]
-        public async Task<List<string>> Get()
+        [HttpPost("GetAll")]
+        public async Task<List<string>> Get(List<int> ids)
         {
             try
             {
-                var result = await RentProcess.GetAll();
+                var result = await RentProcess.GetAll(x => ids.Contains(x.Id));
                 return result.Data;
             }
             catch
@@ -37,6 +41,36 @@ namespace MyApi.Controllers
                 return  new List<string>();
             }
            
+        }
+        [HttpGet("Page-{Page}")]
+        public async Task<SearchDTO> GetPage(int Page)
+        {
+            try
+            {
+                var result = await RentProcess.GetAllPage(Page);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [HttpPost("Search-{Page}")]
+        public async Task<SearchDTO> GetAllSearch(int Page, SearchModel searchModel)
+        {
+            try
+            {
+                var result = await RentProcess.GetAllSearch(searchModel, Page);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
         }
         [HttpGet("Coordinate")]
         public async Task<List<string>> GetCoordinate()
@@ -54,20 +88,69 @@ namespace MyApi.Controllers
 
         }
         [Authorize]
-        [HttpGet("Normal")]
-        public async Task<List<string>> GetNormal()
+        [HttpGet("AdminId-{id}")]
+        public async Task<SearchDTO> GetAllId(int id)
         {
             try
             {
-                var result = await RentProcess.GetAllNormal();
+                var result = await RentProcess.GetAllId(id);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+        }
+        [Authorize]
+        [HttpGet("AdminONumber-{ONumber}")]
+        public async Task<SearchDTO> GetAllONumber(string ONumber)
+        {
+            try
+            {
+                var result = await RentProcess.GetAllOwnNumber(ONumber);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [Authorize]
+        [HttpGet("AdminCNumber-{CNumber}")]
+        public async Task<SearchDTO> GetAllCnumber(string CNumber)
+        {
+            try
+            {
+                var result = await RentProcess.GetAllCustomerNumber(CNumber);
+
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [Authorize]
+        [HttpGet("Normal-{Page}")]
+        public async Task<SearchDTO> GetNormal(int Page)
+        {
+            try
+            {
+                var result = await RentProcess.GetAllNormal(Page);
                 return result.Data;
             }
             catch
             {
-                return new List<string>();
+                return new SearchDTO();
             }
             
         }
+
         [HttpGet("{Id}")]
         public async Task<object> Get(int Id)
         {
@@ -86,6 +169,21 @@ namespace MyApi.Controllers
                 return new object();
             }
            
+        }
+        [HttpGet("Recommend")]
+        public async Task<List<string>> GetRecommend()
+        {
+            try
+            {
+                var result = await RentProcess.GetAllRecommend();
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return new List<string>();
+            }
+
         }
         [Authorize]
         [HttpGet("Admin/{Id}")]
@@ -147,6 +245,31 @@ namespace MyApi.Controllers
 
         }
         [Authorize]
+        [HttpPut("Recommend")]
+        public async void UpdateRecommend([FromBody] Obyekt sell)
+        {
+            try
+            {
+                var items = await RentProcess.GetAllRecommend();
+                if (items.Data.Count > 30)
+                {
+                    var lastItem = items.Data.LastOrDefault();
+                    var Sell30 = JsonSerializer.Deserialize<Obyekt>(lastItem);
+                    var LastId = await RentProcess.GetByIdListAdmin(Sell30.Id);
+                    var LastIdString = JsonSerializer.Deserialize<Obyekt>(JsonSerializer.Serialize(LastId.Data));
+                    LastIdString.Recommend = false;
+                    RentProcess.Update(LastIdString);
+                }
+                RentProcess.Update(sell);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+        }
+        [Authorize]
         [HttpPut]
         public async void Update( Obyekt entity)
         {
@@ -167,23 +290,12 @@ namespace MyApi.Controllers
                 RentImgProcess.DeleteList(Id);
                 await RentCustomerProcess.DeleteList(Id);
                 var entity = await RentProcess.GetById(Id);
-
+                if (entity.Data == null)
+                {
+                    return;
+                }
                 try
                 {
-
-
-                    IConfiguration configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .Build();
-
-                    string cloudName = configuration["Password:CloudName"];
-                    string apiKey = configuration["Password:ApiKey"];
-                    string apiSecret = configuration["Password:ApiSecret"];
-
-                    var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
-                    var cloudinary = new Cloudinary(cloudinaryAccount);
-
                     var publicIds = imgList.Data.Select(x => x.ImgPath).ToList();
 
                     DelResParams deleteParams = new DelResParams()

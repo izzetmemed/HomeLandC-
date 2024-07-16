@@ -11,21 +11,10 @@ namespace MyApi.Controllers
     public class SellCustomerController : ControllerBase
     {
         public SellOperationCustomer sellOperationCustomer { get; set; }
-        public SellCustomerController()
+        public SellCustomerController(SellOperationCustomer SellOperationCustomer)
         {
-            sellOperationCustomer = new SellOperationCustomer();
+            sellOperationCustomer = SellOperationCustomer;
         }
-        //[HttpGet]
-        //public List<SellSecondStepCustomer> Get()
-        //{
-
-        //    return sellOperationCustomer.GetAll().Data;
-        //}
-        //[HttpGet("{Id}")]
-        //public SellSecondStepCustomer Get(int Id)
-        //{
-        //    return sellOperationCustomer.GetById(Id).Data;
-        //}
         [Authorize]
         [HttpPost]
         public void Add([FromBody] SellSecondStepCustomer entity)
@@ -46,12 +35,5 @@ namespace MyApi.Controllers
             }catch(Exception ex) { Console.WriteLine(ex); }
            
         }
-        //[HttpDelete("{Id}")]
-        //public void Delete(int Id)
-        //{
-        //    var entity = sellOperationCustomer.GetById(Id).Data;
-        //    sellOperationCustomer.Delete(entity);
-        //}
-
     }
 }

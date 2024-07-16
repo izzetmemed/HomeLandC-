@@ -15,7 +15,7 @@ namespace Model.Models
         public string? Fullname { get; set; }
         public string? Number { get; set; }
         public string? Region { get; set; }
-        public string? İtem { get; set; }
+        public string? Item { get; set; }
         public string? Address { get; set; }
         public string? SellOrRent { get; set; }
         public string? Metro { get; set; }
@@ -33,6 +33,9 @@ namespace Model.Models
         public bool? IsPaidHomeOwnFirstStep { get; set; }
         public bool? IsPaidCustomerFirstStep { get; set; }
         public bool? IsCalledWithHomeOwnThirdStep { get; set; }
+        public string? Email { get; set; }
+        public int? Looking { get; set; }
+        public bool? Recommend { get; set; }
 
         public virtual ICollection<ObyektImg> ObyektImgs { get; set; }
         public virtual ICollection<ObyektSecondStepCustomer> ObyektSecondStepCustomers { get; set; }

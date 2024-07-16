@@ -1,4 +1,5 @@
 ﻿using DataAccess.AccessingDbRent.Abstract;
+using DataAccess.AccessingDbRent.Concrete.Generic;
 using DataAccess.Repository;
 using Microsoft.EntityFrameworkCore;
 using Model.Contexts;
@@ -14,46 +15,26 @@ namespace DataAccess.AccessingDbRent.Concrete
 {
     public class ObyektAccessImg : BaseRepository<ObyektImg, MyDbContext>, IObyektImg
     {
+        ImgGeneric ImgGeneric { get; set; }
+        CustomerGeneric customerGeneric { get; set; }
+        public ObyektAccessImg()
+        {
+            ImgGeneric = new ImgGeneric();
+            customerGeneric = new CustomerGeneric();
+        }
         public void DeleteList(int foreignId)
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                List<ObyektImg> deleteList = context.Set<ObyektImg>().Where(x => x.ImgIdForeignId == foreignId).ToList();
-                context.Set<ObyektImg>().RemoveRange(deleteList);
-                context.SaveChanges();
-            }
+            customerGeneric.DeleteListGeneric<ObyektImg>(foreignId, "ImgIdForeignId");
         }
 
         public async Task<List<string>> GetAll()
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                var allData = await context.Set<ObyektImg>().ToListAsync();
-                List<string> data = new List<string>();
-
-                foreach (var item in allData)
-                {
-                    var needData = new
-                    {
-                        Id = item.ImgId,
-                        ForeignID = item.ImgIdForeignId,
-                        Path = item.ImgPath,
-
-                    };
-                    string jsonData = JsonSerializer.Serialize(needData);
-                    data.Add(jsonData);
-                }
-                return data;
-            }
+            return await ImgGeneric.GetAllImgGeneric<ObyektImg>();
         }
 
         public async Task<List<ObyektImg>> GetByIdList(int foreignId)
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                var deleteGetById = await context.Set<ObyektImg>().Where(x => x.ImgIdForeignId == foreignId).ToListAsync();
-                return deleteGetById;
-            }
+            return await customerGeneric.GetByIdListGeneric<ObyektImg>(foreignId, "ImgIdForeignId");
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IObyektServiceImg:IGenericService<ObyektImg>
+    public interface IObyektServiceImg:IGenericService<ObyektImg>, IGenericGetAll
     {
     }
 }

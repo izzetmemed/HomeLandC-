@@ -53,8 +53,8 @@ namespace DataAccess.AccessingDbRent.Concrete
                 && (x.Metros.Count == 0 ? true : x.Metros.Any(x => x.MetroName == data.Metro))
                 && (x.Rooms.Count == 0 || x.Rooms.Any(r => r.RoomCount == data.Room))
                   && (x.Regions.Count == 0 ? true : x.Regions.Any(x => x.RegionName == data.Region))
-                   && (data.Price < x.MaxPrice)
-                    && (data.Price > x.MinPrice)
+                   && (data.Price <= x.MaxPrice)
+                    && (data.Price >= x.MinPrice)
                  )
          .ToList();
 
@@ -101,8 +101,8 @@ namespace DataAccess.AccessingDbRent.Concrete
                 && (x.Metros.Count == 0 ? true : x.Metros.Any(x => x.MetroName == data.Metro))
                 && (x.Rooms.Count == 0 || x.Rooms.Any(r => r.RoomCount == data.Room))
                   && (x.Regions.Count == 0 ? true : x.Regions.Any(x => x.RegionName == data.Region))
-                   && (data.Price < x.MaxPrice)
-                    && (data.Price > x.MinPrice)
+                   && (data.Price <= x.MaxPrice)
+                    && (data.Price >= x.MinPrice)
                  )
          .ToList();
 
@@ -149,8 +149,98 @@ namespace DataAccess.AccessingDbRent.Concrete
                 && (x.Metros.Count == 0 ? true : x.Metros.Any(x => x.MetroName == data.Metro))
                 && (x.Rooms.Count == 0 || x.Rooms.Any(r => r.RoomCount == data.Room))
                   && (x.Regions.Count == 0 ? true : x.Regions.Any(x => x.RegionName == data.Region))
-                   && (data.Price < x.MaxPrice)
-                    && (data.Price > x.MinPrice)
+                   && (data.Price <= x.MaxPrice)
+                    && (data.Price >= x.MinPrice)
+                 )
+         .ToList();
+
+
+                    return suitableData;
+                }
+                else
+                {
+                    return new List<MediaType>();
+                }
+
+            }
+        }
+        public async Task<List<MediaType>> GetAllLand(Land data)
+        {
+            using (MyDbContext context = new MyDbContext())
+            {
+                var Media = await context.Set<MediaType>()
+                          .Where(x => x.Type == "Land")
+                          .ToListAsync();
+
+                Media = Media.Where(x => int.Parse(x.Counter) > 0)
+                             .ToList();
+
+
+                var Metro = await context.Set<Metro>().ToListAsync();
+                var Room = await context.Set<Room>().ToListAsync();
+                var Building = await context.Set<Building>().ToListAsync();
+                var Region = await context.Set<Region>().ToListAsync();
+
+                if (Media != null)
+                {
+                    foreach (var rentHome in Media)
+                    {
+                        rentHome.Metros = Metro.Where(x => x.MetroForeignId == rentHome.Id).ToList();
+                        rentHome.Rooms = Room.Where(x => x.RoomForeignId == rentHome.Id).ToList();
+                        rentHome.Buildings = Building.Where(x => x.BuildingForeignId == rentHome.Id).ToList();
+                        rentHome.Regions = Region.Where(x => x.RegionForeignId == rentHome.Id).ToList();
+                    }
+
+                    var suitableData = Media
+         .Where(x =>  (x.Regions.Count == 0 ? true : x.Regions.Any(x => x.RegionName == data.Region))
+                   && (data.Price <= x.MaxPrice)
+                    && (data.Price >= x.MinPrice)
+                 )
+         .ToList();
+
+
+                    return suitableData;
+                }
+                else
+                {
+                    return new List<MediaType>();
+                }
+
+            }
+        }
+        public async Task<List<MediaType>> GetAllOffice(Office data)
+        {
+            using (MyDbContext context = new MyDbContext())
+            {
+                var Media = await context.Set<MediaType>()
+                          .Where(x => x.Type == "Office")
+                          .ToListAsync();
+
+                Media = Media.Where(x => int.Parse(x.Counter) > 0)
+                             .ToList();
+
+
+                var Metro = await context.Set<Metro>().ToListAsync();
+                var Room = await context.Set<Room>().ToListAsync();
+                var Building = await context.Set<Building>().ToListAsync();
+                var Region = await context.Set<Region>().ToListAsync();
+
+                if (Media != null)
+                {
+                    foreach (var rentHome in Media)
+                    {
+                        rentHome.Metros = Metro.Where(x => x.MetroForeignId == rentHome.Id).ToList();
+                        rentHome.Rooms = Room.Where(x => x.RoomForeignId == rentHome.Id).ToList();
+                        rentHome.Buildings = Building.Where(x => x.BuildingForeignId == rentHome.Id).ToList();
+                        rentHome.Regions = Region.Where(x => x.RegionForeignId == rentHome.Id).ToList();
+                    }
+
+                    var suitableData = Media
+         .Where(x => (x.Metros.Count == 0 ? true : x.Metros.Any(x => x.MetroName == data.Metro))
+                && (x.Rooms.Count == 0 || x.Rooms.Any(r => r.RoomCount == data.Room))
+                  && (x.Regions.Count == 0 ? true : x.Regions.Any(x => x.RegionName == data.Region))
+                   && (data.Price <= x.MaxPrice)
+                    && (data.Price >= x.MinPrice)
                  )
          .ToList();
 
