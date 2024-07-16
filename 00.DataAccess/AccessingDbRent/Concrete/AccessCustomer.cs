@@ -1,4 +1,5 @@
 ﻿using DataAccess.AccessingDbRent.Abstract;
+using DataAccess.AccessingDbRent.Concrete.Generic;
 using DataAccess.Repository;
 using Microsoft.EntityFrameworkCore;
 using Model.Contexts;
@@ -14,48 +15,25 @@ namespace DataAccess.AccessingDbRent.Concrete
 {
     public class AccessCustomer : BaseRepository<SecondStepCustomer, MyDbContext>, IAccessCustomer
     {
+        CustomerGeneric Customer;
+        public AccessCustomer()
+        {
+            Customer = new CustomerGeneric();
+        }
         public async void DeleteList(int foreignId)
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                List<SecondStepCustomer> deleteList =await context.Set<SecondStepCustomer>().Where(x => x.SecondStepCustomerForeignId == foreignId).ToListAsync();
-                context.Set<SecondStepCustomer>().RemoveRange(deleteList);
-                context.SaveChanges();
-            }
+            await Customer.DeleteListGeneric<SecondStepCustomer>(foreignId, "SecondStepCustomerForeignId");
         }
 
 
         public async Task<List<string>> GetAll()
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                var customer = await context.Set<SecondStepCustomer>().ToListAsync();
-                var allData = customer;
-                List<string> data = new List<string>();
-
-                foreach (var item in allData)
-                {
-                    var needData = new
-                    {
-                        Id = item.SecondStepCustomerId,
-                        Fullname = item.FullName,
-                        Number = item.Number,
-                        Date = item.DirectCustomerDate,
-                    };
-                    string jsonData = JsonSerializer.Serialize(needData);
-                    data.Add(jsonData);
-                }
-                return data;
-            }
+          return  await Customer.GetAllCustomer<SecondStepCustomer>();
         }
 
         public async Task<List<SecondStepCustomer>> GetByIdList(int foreignId)
         {
-            using (MyDbContext context = new MyDbContext())
-            {
-                var deleteGetById = await context.Set<SecondStepCustomer>().Where(x => x.SecondStepCustomerForeignId == foreignId).ToListAsync();
-                return deleteGetById;
-            }
+           return await Customer.GetByIdListGeneric<SecondStepCustomer>(foreignId, "SecondStepCustomerForeignId");
         }
     }
 }

@@ -15,17 +15,10 @@ namespace MyApi.Controllers
     {
         public RentHomeOperationCustomer RentCustomerProcess { get; set; }
 
-        public RentHomeCustomerController()
+        public RentHomeCustomerController(RentHomeOperationCustomer rentHomeOperationCustomer)
         {
-            RentCustomerProcess = new RentHomeOperationCustomer();
+            RentCustomerProcess = rentHomeOperationCustomer;
         }
-
-        //[HttpGet]
-        //public async Task<List<string>> Get()
-        //{
-        //    var data =await RentCustomerProcess.GetAll();
-        //    return data.Data;
-        //}
         [Authorize]
         [HttpGet("{Id}")]
         public async Task<SecondStepCustomer> Get(int Id)
@@ -37,8 +30,7 @@ namespace MyApi.Controllers
             }catch (Exception ex) { 
                 Console.WriteLine(ex); 
                 return new SecondStepCustomer();
-            }
-           
+            }  
         }
         [Authorize]
         [HttpPost]
@@ -64,12 +56,5 @@ namespace MyApi.Controllers
             }catch(Exception ex) { Console.WriteLine(ex); }
            
         }
-
-        //[HttpDelete("{Id}")]
-        //public async void Delete(int Id)
-        //{
-        //    var entity =await RentCustomerProcess.GetById(Id);
-        //    RentCustomerProcess.Delete(entity.Data);
-        //}
     }
 }

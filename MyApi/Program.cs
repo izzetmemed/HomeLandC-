@@ -5,6 +5,9 @@ using MyApi.Controllers.SystemAuth;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.Filters;
+using CloudinaryDotNet;
+using Business.Concrete;
+using MyApi.Method;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,18 +48,46 @@ builder.Services.AddSwaggerGen();
 // CORS policy
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 {
-    builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    builder.WithOrigins("*")
+           .AllowAnyMethod()
+           .AllowAnyHeader();
 }));
+builder.Services.AddSingleton<Cloudinary>(provider =>
+{
+    IConfiguration configuration = new ConfigurationBuilder()
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+              .Build();
 
-
-
+    string cloudName = configuration["Password:CloudName"];
+    string apiKey = configuration["Password:ApiKey"];
+    string apiSecret = configuration["Password:ApiSecret"];
+    var account = new Account(cloudName, apiKey, apiSecret);
+    return new Cloudinary(account);
+});
+builder.Services.AddScoped<LandImgOperation>();
+builder.Services.AddScoped<LandOperation>();
+builder.Services.AddScoped<LandCustomerOperation>();
+builder.Services.AddSingleton<UploadImageAndGetPath>();
+builder.Services.AddScoped<ObyektOperationImg>();
+builder.Services.AddScoped<ObyektOperation>();
+builder.Services.AddScoped<ObyektOperationCustomer>();
+builder.Services.AddScoped<OfficeImgOperation>();
+builder.Services.AddScoped<OfficeOperation>();
+builder.Services.AddScoped<OfficeCustomerOperation>();
+builder.Services.AddScoped<RentHomeOperationImg>();
+builder.Services.AddScoped<RentHomeOperation>();
+builder.Services.AddScoped<RentHomeOperationCustomer>();
+builder.Services.AddScoped<SellOperationImg>();
+builder.Services.AddScoped<SellOperation>();
+builder.Services.AddScoped<SellOperationCustomer>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseDefaultFiles();

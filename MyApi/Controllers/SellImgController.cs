@@ -8,6 +8,7 @@ using Model.Models;
 using System.Text.Json;
 using DataAccess.AccessingDbRent.Concrete;
 using Microsoft.AspNetCore.Authorization;
+using MyApi.Method;
 
 namespace MyApi.Controllers
 {
@@ -15,34 +16,24 @@ namespace MyApi.Controllers
     [ApiController]
     public class SellImgController : ControllerBase
     {
-        public SellOperationImg RentImgProcess;
-        public SellImg ImgNameProperty;
-        public SellOperation sell;
-        public SellOperationCustomer sellOperationCustomer;
-
-        public SellImgController()
+        private readonly SellOperationImg RentImgProcess;
+        private readonly SellOperation sell;
+        private readonly SellOperationCustomer sellOperationCustomer;
+        private readonly Cloudinary cloudinary;
+        private readonly UploadImageAndGetPath uploadImageAndGetPath;
+        public SellImgController(Cloudinary Cloudinary , UploadImageAndGetPath uploadImage, SellOperationImg sellOperationImg , SellOperation sellOperation, SellOperationCustomer sellOperationCustom)
         {
-            RentImgProcess = new SellOperationImg();
-            ImgNameProperty = new SellImg();
-            sell = new SellOperation();
-            sellOperationCustomer = new SellOperationCustomer();    
+            RentImgProcess = sellOperationImg;
+            sell = sellOperation;
+            sellOperationCustomer = sellOperationCustom;
+            cloudinary = Cloudinary;
+            uploadImageAndGetPath=uploadImage;
         }
 
         [HttpPost]
         public async Task<IActionResult> UploadImage([FromForm] List<IFormFile> image)
         {
-            IConfiguration configuration = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-              .Build();
-
-            string cloudName = configuration["Password:CloudName"];
-            string apiKey = configuration["Password:ApiKey"];
-            string apiSecret = configuration["Password:ApiSecret"];
             string cloudinaryFolder = "Home/Sell";
-
-            var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
-            var cloudinary = new Cloudinary(cloudinaryAccount);
             async Task<int> GetLastId()
             {
                 var items = await sell.GetAll();
@@ -51,10 +42,6 @@ namespace MyApi.Controllers
                 {
                     var lastItem = items.Data.FirstOrDefault();
                     var RentHome = JsonSerializer.Deserialize<Sell>(lastItem);
-
-
-
-
                     return RentHome.Id;
                 }
                 else
@@ -68,7 +55,6 @@ namespace MyApi.Controllers
                 {
                     return BadRequest("No image provided");
                 }
-
                 try
                 {
                     for (var i = 0; i < image.Count; i++)
@@ -76,7 +62,7 @@ namespace MyApi.Controllers
                         string uniqueFilename = Guid.NewGuid().ToString("N");
                         string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
 
-                        var uploadResult = UploadImageAndGetPath(cloudinary, image[i], cloudinaryImagePath);
+                        var uploadResult = uploadImageAndGetPath.UploadImage(cloudinary, image[i], cloudinaryImagePath);
                         RentImgProcess.Add(new SellImg
                         {
                             ImgPath = cloudinaryImagePath,
@@ -84,75 +70,88 @@ namespace MyApi.Controllers
                         });
 
                     }
-
-
-
-
                     return Ok(new { Message = "Image uploaded successfully" });
                 }
                 catch (Exception ex)
                 {
                     return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
-
-
             }
         }
-        static string UploadImageAndGetPath(Cloudinary cloudinary, IFormFile image, string cloudinaryImagePath)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> PostUpdateImage([FromForm] List<IFormFile> image, int id)
         {
-            using (var stream = image.OpenReadStream())
+            string cloudinaryFolder = "Home/Sell";
+            var LastId = id;
             {
-                cloudinaryImagePath = cloudinaryImagePath.TrimStart('/');
-
-                var uploadParams = new ImageUploadParams
+                if (image == null || image.Count == 0)
                 {
-                    File = new FileDescription(image.FileName, stream),
-                    PublicId = cloudinaryImagePath,
+                    return BadRequest("No image provided");
+                }
+                try
+                {
+                    for (var i = 0; i < image.Count; i++)
+                    {
+                        string uniqueFilename = Guid.NewGuid().ToString("N");
+                        string cloudinaryImagePath = $"{cloudinaryFolder}/{uniqueFilename}";
+
+                        var uploadResult = uploadImageAndGetPath.UploadImage(cloudinary, image[i], cloudinaryImagePath);
+                        RentImgProcess.Add(new SellImg
+                        {
+                            ImgPath = cloudinaryImagePath,
+                            ImgIdForeignId = LastId,
+                        });
+                    }
+                    return Ok(new { Message = "Image uploaded successfully" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+        }
+        [HttpPost("Video/{id}")]
+        public async Task<IActionResult> AddVideo(IFormFile video, int id)
+        {
+            string cloudinaryFolder = "Home/SellVideo";
+            {
+                if (video == null)
+                {
+                    return BadRequest("No image provided");
+                }
+                try
+                { 
+                    string uniqueFilename = Guid.NewGuid().ToString("N");
+                    string cloudinaryVideoPath = $"{cloudinaryFolder}/{uniqueFilename}";
+                    var dataSell=await sell.GetById(id);
+                    if (dataSell == null)
+                    {
+                        return BadRequest("No image provided");
+                    }
+                    dataSell.Data.VideoPath = cloudinaryVideoPath;
+                    sell.Update(dataSell.Data);
+                    var uploadResult = await UploadVideoAndGetPath(cloudinary, video, cloudinaryVideoPath);
+                    return Ok(new { Message = "Image uploaded successfully" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
+        }
+        private async Task<UploadResult> UploadVideoAndGetPath(Cloudinary cloudinary, IFormFile video, string cloudinaryVideoPath)
+        {
+            using (var stream = video.OpenReadStream())
+            {
+                var uploadParams = new VideoUploadParams
+                {
+                    File = new FileDescription(video.FileName, stream),
+                    PublicId = cloudinaryVideoPath,
                 };
 
-                var uploadResult = cloudinary.Upload(uploadParams);
-
-                return uploadResult.SecureUri.ToString();
+                return await cloudinary.UploadAsync(uploadParams);
             }
         }
-
-        [HttpGet("DownloadImages")]
-        public IActionResult DownloadImages([FromQuery(Name = "imgNames")] List<string> DownloadImages)
-        {
-            try
-            {
-                if (DownloadImages[0] == null)
-                {
-                    return Ok( "Array is null");
-                }
-                else
-                {
-                    var SplitDataDownloadImages = DownloadImages[0].Split(",");
-                    IConfiguration configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .Build();
-
-                    string cloudName = configuration["Password:CloudName"];
-                    string cloudinaryFolder = "Home/Sell";
-
-                    List<string> imageUrls = new List<string>();
-                    foreach (var imgName in SplitDataDownloadImages)
-                    {
-                        string imageUrl = $" https://res.cloudinary.com/{cloudName}/image/upload/c_scale,q_auto,f_auto/{imgName}";
-                        imageUrls.Add(imageUrl);
-                    }
-
-                    return Ok(new { Message = "Image URLs generated successfully", ImageUrls = imageUrls });
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"An error occurred: {ex.Message}");
-            }
-        }
-
         [Authorize]
         [HttpPut("{Id}")]
         public async Task<IActionResult> Update(int Id)

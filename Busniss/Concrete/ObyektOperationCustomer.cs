@@ -10,17 +10,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Business.Concrete
 {
     public class ObyektOperationCustomer : IObyektServiceCustomer
     {
-        public ObyectAccessCustomer obyectAccessCustomer { get; set; }
-
+        ObyectAccessCustomer obyectAccessCustomer;
+        SendMail SendMail;
+        ObyektOperation ObyektOperation;
+        CustomerEmailDA customerEmailDA;
         public ObyektOperationCustomer()
         {
             obyectAccessCustomer = new ObyectAccessCustomer();
+            SendMail = new SendMail();
+            ObyektOperation = new ObyektOperation();
+            customerEmailDA = new CustomerEmailDA();
         }
         public async Task<IResult> Add(ObyektSecondStepCustomer Model)
         {
@@ -29,6 +35,27 @@ namespace Business.Concrete
                 return new ErrorResult(MyMessage.Error);
             }
             obyectAccessCustomer.Add(Model);
+            int ModelId = Model.SecondStepCustomerForeignId ?? 0;
+            if (ModelId != 0)
+            {
+                var data = await ObyektOperation.GetById(ModelId);
+                if (!Regex.IsMatch(Model.Email, @"^\S+@\S+\.\S+$"))
+                {
+                    SendMail.SendEmail(data.Data.Email, data.Data.Fullname, Model.FullName);
+                }
+                else
+                {
+                    SendMail.SendEmail(data.Data.Email, data.Data.Fullname, Model.FullName);
+                    SendMail.SendEmail(Model.Email, data.Data.Fullname, Model.FullName, data.Data.Number);
+                    var customeremail = new CustomerEmail()
+                    {
+                        Email = Model.Email,
+                        Fullname = Model.FullName,
+                        Number = Model.Number
+                    };
+                    customerEmailDA.Add(customeremail);
+                };
+            }
             return new SuccessResult(MyMessage.Success);
         }
 

@@ -11,8 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
 
 namespace Business.Concrete
 {
@@ -21,6 +19,8 @@ namespace Business.Concrete
         public MediaAccess media = new MediaAccess();
         public Access RentHome=  new Access();
         public SellAccess sellAccess = new SellAccess();
+        public LandDA landDA= new LandDA();
+        public OfficeDA officeDA= new OfficeDA();
         public ObyektAccess obyektAccess = new ObyektAccess();
         public async Task<IResult> Add( MediaType Model)
         {
@@ -28,16 +28,12 @@ namespace Business.Concrete
             {
                 media.Add(Model);
             }
-
             return new SuccessResult(MyMessage.Success);
         }
-
         public async Task<List<MediaType>> GetAll()
         {
-
             return await media.GetAll();
         }
-
         public async void MakeContact(RentHome data)
         {
             async Task<int> GetLastId()
@@ -146,22 +142,96 @@ namespace Business.Concrete
             }
 
         }
+        public async void MakeContactLand(Land data)
+        {
+            async Task<int> GetLastId()
+            {
+                var items = await landDA.GetAll();
+
+                if (items.Any())
+                {
+                    var lastItem = items.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<Land>(lastItem);
+
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            var LastId = await GetLastId();
+            var Data = await media.GetAllLand(data);
+            for (int i = 0; i < Data.Count; i++)
+            {
+
+                SendEmail(int.Parse(Data[i].Counter), Data[i].Number, LastId, "https://HomeLand.az/Land/Kart/");
+                this.Update(Data[i]);
+                await Task.Delay(1000);
+                if (i == 2)
+                {
+                    break;
+                }
+            }
+
+        }
+        public async void MakeContactOffice(Office data)
+        {
+            async Task<int> GetLastId()
+            {
+                var items = await sellAccess.GetAll();
+
+                if (items.Any())
+                {
+                    var lastItem = items.FirstOrDefault();
+                    var RentHome = JsonSerializer.Deserialize<Office>(lastItem);
+
+
+
+
+                    return RentHome.Id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            var LastId = await GetLastId();
+            var Data = await media.GetAllOffice(data);
+            for (int i = 0; i < Data.Count; i++)
+            {
+
+                SendEmail(int.Parse(Data[i].Counter), Data[i].Number, LastId, "https://HomeLand.az/Office/Kart/");
+                this.Update(Data[i]);
+                await Task.Delay(1000);
+                if (i == 2)
+                {
+                    break;
+                }
+            }
+
+        }
         public IResult Update(MediaType Model)
         {
             Model.Counter=(int.Parse(Model.Counter)-1).ToString();
             media.Update(Model);
             return new SuccessResult("Update Media");
         }
-
         private void SendEmail(int count, string Number, int id,string Link)
         {
 
             string fromEmail = "homeland.az.service@gmail.com";
             string toEmail = Number; 
             string subject = "HomeLand.az";
-            string body = $"Sizə uğun yeni elan yükləndi. Tarix: {DateTime.Now.ToString("M/d/yyyy h:mm")}" + Environment.NewLine+
-                        $"Elanı görmək üçün keçid edin. {Link}{id}  "+ Environment.NewLine +
-                $"Sizə göndərəcəyimiz elan sayı: {count}.";
+            string body = $"Sizə uyğun yeni elan yükləndi." + Environment.NewLine + 
+                $"Tarix: {DateTime.Now.ToString("M/d/yyyy h:mm")}" + Environment.NewLine+
+                $"Elanı görmək üçün keçid edin. {Link}{id}  "+ Environment.NewLine +
+                $"Sizə göndərəcəyimiz elan sayı: {count}." + Environment.NewLine + 
+                $"Hörmətlə : Homeland Company";
+
             try
             {
                 using (System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient("smtp.gmail.com"))

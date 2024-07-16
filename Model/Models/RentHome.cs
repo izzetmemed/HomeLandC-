@@ -23,7 +23,7 @@ namespace Model.Models
         public byte? Room { get; set; }
         public string? Repair { get; set; }
         public string? Building { get; set; }
-        public string? İtem { get; set; }
+        public string? Item { get; set; }
         public bool? Bed { get; set; }
         public bool? Wardrobe { get; set; }
         public bool? TableChair { get; set; }
@@ -48,6 +48,9 @@ namespace Model.Models
         public bool? Girl { get; set; }
         public bool? WorkingBoy { get; set; }
         public bool? Family { get; set; }
+        public string? Email { get; set; }
+        public int? Looking { get; set; }
+        public bool? Recommend { get; set; }
 
         public virtual ICollection<ImgName> ImgNames { get; set; }
         public virtual ICollection<SecondStepCustomer> SecondStepCustomers { get; set; }

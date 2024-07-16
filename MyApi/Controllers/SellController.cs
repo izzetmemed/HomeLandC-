@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Model.Models;
 using System.Text.Json;
+using System.Linq;
+using Model.DTOmodels;
 
 namespace MyApi.Controllers
 {
@@ -14,16 +16,23 @@ namespace MyApi.Controllers
     [ApiController]
     public class SellController : ControllerBase
     {
-        public SellOperation sellOperation  =new SellOperation();
-        public SellOperationImg sellOperationImg = new SellOperationImg();
-        public SellOperationCustomer sellOperationCustomer = new SellOperationCustomer();
-
-        [HttpGet]
-        public async Task<List<string>> Get()
+        public SellOperation sellOperation ;
+        public SellOperationImg sellOperationImg ;
+        public SellOperationCustomer sellOperationCustomer ;
+        public Cloudinary cloudinary { get; set; }
+        public SellController(Cloudinary cloudinaryNew, SellOperation SellOperation, SellOperationImg SellOperationImg, SellOperationCustomer SellOperationCustomer)
+        {
+            sellOperation = SellOperation;
+            sellOperationImg = SellOperationImg;
+            sellOperationCustomer = SellOperationCustomer;
+            cloudinary = cloudinaryNew;
+        }
+        [HttpPost("GetAll")]
+        public async Task<List<string>> Get(List<int> ids)
         {
             try
             {
-                var result = await sellOperation.GetAll();
+                var result = await sellOperation.GetAll(x => ids.Contains(x.Id));
                 return result.Data;
             }
             catch
@@ -31,6 +40,36 @@ namespace MyApi.Controllers
                 return new List<string>();
             }
            
+        }
+        [HttpGet("Page-{Page}")]
+        public async Task<SearchDTO> GetPage(int Page)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllPage(Page);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [HttpPost("Search-{Page}")]
+        public async Task<SearchDTO> GetAllSearch(int Page, SearchModel searchModel)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllSearch(searchModel, Page);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
         }
         [HttpGet("Coordinate")]
         public async Task<List<string>> GetCoordinate()
@@ -47,15 +86,78 @@ namespace MyApi.Controllers
             }
 
         }
-        [Authorize]
-        [HttpGet("Normal")]
-        public async Task<List<string>> GetNormal()
+        [HttpGet("Recommend")]
+        public async Task<List<string>> GetRecommend()
         {
             try
             {
-                var result = await sellOperation.GetAllNormal();
+                var result = await sellOperation.GetAllRecommend();
                 return result.Data;
-            }catch(Exception ex) { Console.WriteLine(ex.Message);return new List<string>(); }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return new List<string>();
+            }
+
+        }
+        [Authorize]
+        [HttpGet("AdminId-{id}")]
+        public async Task<SearchDTO> GetAllId(int id)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllId(id);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+        }
+        [Authorize]
+        [HttpGet("AdminONumber-{ONumber}")]
+        public async Task<SearchDTO> GetAllONumber(string ONumber)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllOwnNumber(ONumber);
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [Authorize]
+        [HttpGet("AdminCNumber-{CNumber}")]
+        public async Task<SearchDTO> GetAllCnumber(string CNumber)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllCustomerNumber(CNumber);
+
+                return result.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new SearchDTO();
+            }
+
+        }
+        [Authorize]
+        [HttpGet("Normal-{Page}")]
+        public async Task<SearchDTO> GetNormal(int Page)
+        {
+            try
+            {
+                var result = await sellOperation.GetAllNormal(Page);
+                return result.Data;
+            }catch(Exception ex) { Console.WriteLine(ex.Message);return new SearchDTO(); }
             
         }
         [HttpGet("{Id}")]
@@ -149,29 +251,26 @@ namespace MyApi.Controllers
                 sellOperationImg.DeleteList(Id);
                 sellOperationCustomer.DeleteList(Id);
                 var entity = await sellOperation.GetById(Id);
+                if (entity.Data == null)
+                {
+                    return;
+                }
 
                 try
                 {
-
-
-                    IConfiguration configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                    .Build();
-
-                    string cloudName = configuration["Password:CloudName"];
-                    string apiKey = configuration["Password:ApiKey"];
-                    string apiSecret = configuration["Password:ApiSecret"];
-
-                    var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
-                    var cloudinary = new Cloudinary(cloudinaryAccount);
-
-                    var publicIds = imgList.Data.Select(x => x.ImgPath).ToList();
+                    var imgIds = imgList.Data.Select(x => x.ImgPath).ToList();
+                    var videoIds =entity.Data.VideoPath;
+                   
 
                     DelResParams deleteParams = new DelResParams()
                     {
-                        PublicIds = publicIds
+                        PublicIds = imgIds
                     };
+                    if (videoIds!=null)
+                    {
+                        DelResResult resultVideo = cloudinary.DeleteResources(ResourceType.Video, videoIds);
+                    }
+                    
 
                     DelResResult result = cloudinary.DeleteResources(deleteParams);
 
@@ -210,6 +309,31 @@ namespace MyApi.Controllers
                 Console.WriteLine(ex.Message);
             }
             
+        }
+        [Authorize]
+        [HttpPut("Recommend")]
+        public async void UpdateRecommend([FromBody] Sell sell)
+        {
+            try
+            {
+                var items = await sellOperation.GetAllRecommend();
+                if (items.Data.Count > 30)
+                {
+                    var lastItem = items.Data.LastOrDefault();
+                    var Sell30 = JsonSerializer.Deserialize<Sell>(lastItem);
+                    var LastId = await sellOperation.GetByIdListAdmin(Sell30.Id);
+                    var LastIdString = JsonSerializer.Deserialize<Sell>(JsonSerializer.Serialize(LastId.Data));
+                    LastIdString.Recommend = false;
+                    sellOperation.Update(LastIdString);
+                }
+                sellOperation.Update(sell);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
         private async Task<int> GetLastId()
         {

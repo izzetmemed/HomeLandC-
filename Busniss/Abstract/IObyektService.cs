@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Business.Abstract
 {
-    public interface IObyektService : IGenericService<Obyekt>, IGenricServiceGetByIdObject,IGenericServiceGetAllNormal, IGenericServiceGetByIdAdmin, IGenericGetAllCoordinate
+    public interface IObyektService : IGenericService<Obyekt>, IGenericGetAllPredicate<Obyekt>, IGenericGetAllRecommend, IGenricServiceGetByIdObject,IGenericServiceGetAllNormal, IGenericServiceGetByIdAdmin, IGenericGetAllCoordinate, IGenericGetAllPage,IGenericGetAllSearch, IGetAllCustomerNumber, IGetAllId, IGetAllOwnNumber
     {
     }
 }

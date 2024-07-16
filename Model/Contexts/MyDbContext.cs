@@ -19,12 +19,19 @@ namespace Model.Contexts
         }
 
         public virtual DbSet<Building> Buildings { get; set; } = null!;
+        public virtual DbSet<CustomerEmail> CustomerEmails { get; set; } = null!;
         public virtual DbSet<ImgName> ImgNames { get; set; } = null!;
+        public virtual DbSet<Land> Lands { get; set; } = null!;
+        public virtual DbSet<LandCustomer> LandCustomers { get; set; } = null!;
+        public virtual DbSet<LandImg> LandImgs { get; set; } = null!;
         public virtual DbSet<MediaType> MediaTypes { get; set; } = null!;
         public virtual DbSet<Metro> Metros { get; set; } = null!;
         public virtual DbSet<Obyekt> Obyekts { get; set; } = null!;
         public virtual DbSet<ObyektImg> ObyektImgs { get; set; } = null!;
         public virtual DbSet<ObyektSecondStepCustomer> ObyektSecondStepCustomers { get; set; } = null!;
+        public virtual DbSet<Office> Offices { get; set; } = null!;
+        public virtual DbSet<OfficeCustomer> OfficeCustomers { get; set; } = null!;
+        public virtual DbSet<OfficeImg> OfficeImgs { get; set; } = null!;
         public virtual DbSet<Region> Regions { get; set; } = null!;
         public virtual DbSet<RentHome> RentHomes { get; set; } = null!;
         public virtual DbSet<Room> Rooms { get; set; } = null!;
@@ -43,7 +50,7 @@ namespace Model.Contexts
                 .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-                string ConnectionString = configuration["Password:DbContext"];
+                string ConnectionString = configuration["Password:DbContextLocal"];
                 optionsBuilder.UseSqlServer(ConnectionString);
             }
         }
@@ -63,6 +70,19 @@ namespace Model.Contexts
                     .HasConstraintName("FK__Building__Buildi__1D7B6025");
             });
 
+            modelBuilder.Entity<CustomerEmail>(entity =>
+            {
+                entity.ToTable("CustomerEmail");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Fullname).HasMaxLength(50);
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+            });
+
             modelBuilder.Entity<ImgName>(entity =>
             {
                 entity.HasKey(e => e.ImgId)
@@ -78,6 +98,91 @@ namespace Model.Contexts
                     .WithMany(p => p.ImgNames)
                     .HasForeignKey(d => d.ImgIdForeignId)
                     .HasConstraintName("FK__ImgName__ImgIdFo__3D2915A8");
+            });
+
+            modelBuilder.Entity<Land>(entity =>
+            {
+                entity.ToTable("Land");
+
+                entity.Property(e => e.Addition).HasMaxLength(1000);
+
+                entity.Property(e => e.Address).HasMaxLength(50);
+
+                entity.Property(e => e.CoordinateX).HasMaxLength(50);
+
+                entity.Property(e => e.CoordinateY).HasMaxLength(50);
+
+                entity.Property(e => e.Date)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Document).HasMaxLength(50);
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Fullname).HasMaxLength(50);
+
+                entity.Property(e => e.IsCalledWithCustomerFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsCalledWithHomeOwnFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsCalledWithHomeOwnThirdStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsPaidCustomerFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsPaidHomeOwnFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Looking).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Recommend).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Region).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<LandCustomer>(entity =>
+            {
+                entity.HasKey(e => e.SecondStepCustomerId)
+                    .HasName("PK__LandCust__735994EFD132E52A");
+
+                entity.ToTable("LandCustomer");
+
+                entity.Property(e => e.DirectCustomerDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.FullName).HasMaxLength(50);
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.HasOne(d => d.SecondStepCustomerForeign)
+                    .WithMany(p => p.LandCustomers)
+                    .HasForeignKey(d => d.SecondStepCustomerForeignId)
+                    .HasConstraintName("FK__LandCusto__Secon__3CF40B7E");
+            });
+
+            modelBuilder.Entity<LandImg>(entity =>
+            {
+                entity.HasKey(e => e.ImgId)
+                    .HasName("PK__LandImg__352F54F3A6AC1FE4");
+
+                entity.ToTable("LandImg");
+
+                entity.Property(e => e.ImgPath)
+                    .HasMaxLength(500)
+                    .HasColumnName("imgPath");
+
+                entity.HasOne(d => d.ImgIdForeign)
+                    .WithMany(p => p.LandImgs)
+                    .HasForeignKey(d => d.ImgIdForeignId)
+                    .HasConstraintName("FK__LandImg__ImgIdFo__3A179ED3");
             });
 
             modelBuilder.Entity<MediaType>(entity =>
@@ -128,6 +233,10 @@ namespace Model.Contexts
 
                 entity.Property(e => e.Document).HasMaxLength(50);
 
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Fullname).HasMaxLength(50);
 
                 entity.Property(e => e.IsCalledWithCustomerFirstStep).HasDefaultValueSql("((0))");
@@ -140,17 +249,21 @@ namespace Model.Contexts
 
                 entity.Property(e => e.IsPaidHomeOwnFirstStep).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.Item).HasMaxLength(50);
+
+                entity.Property(e => e.Looking).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Metro).HasMaxLength(50);
 
                 entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Recommend).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Region).HasMaxLength(50);
 
                 entity.Property(e => e.Repair).HasMaxLength(50);
 
                 entity.Property(e => e.SellOrRent).HasMaxLength(30);
-
-                entity.Property(e => e.İtem).HasMaxLength(50);
             });
 
             modelBuilder.Entity<ObyektImg>(entity =>
@@ -181,6 +294,10 @@ namespace Model.Contexts
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.FullName).HasMaxLength(50);
 
                 entity.Property(e => e.Number).HasMaxLength(30);
@@ -189,6 +306,99 @@ namespace Model.Contexts
                     .WithMany(p => p.ObyektSecondStepCustomers)
                     .HasForeignKey(d => d.SecondStepCustomerForeignId)
                     .HasConstraintName("FK__ObyektSec__Secon__5224328E");
+            });
+
+            modelBuilder.Entity<Office>(entity =>
+            {
+                entity.ToTable("office");
+
+                entity.Property(e => e.Addition).HasMaxLength(1000);
+
+                entity.Property(e => e.Address).HasMaxLength(50);
+
+                entity.Property(e => e.CoordinateX).HasMaxLength(50);
+
+                entity.Property(e => e.CoordinateY).HasMaxLength(50);
+
+                entity.Property(e => e.Date)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Document).HasMaxLength(50);
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Fullname).HasMaxLength(50);
+
+                entity.Property(e => e.IsCalledWithCustomerFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsCalledWithHomeOwnFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsCalledWithHomeOwnThirdStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsPaidCustomerFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsPaidHomeOwnFirstStep).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Item).HasMaxLength(50);
+
+                entity.Property(e => e.Looking).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Metro).HasMaxLength(50);
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Recommend).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Region).HasMaxLength(50);
+
+                entity.Property(e => e.Repair).HasMaxLength(50);
+
+                entity.Property(e => e.SellOrRent).HasMaxLength(30);
+            });
+
+            modelBuilder.Entity<OfficeCustomer>(entity =>
+            {
+                entity.HasKey(e => e.SecondStepCustomerId)
+                    .HasName("PK__OfficeCu__735994EFD7144C5C");
+
+                entity.ToTable("OfficeCustomer");
+
+                entity.Property(e => e.DirectCustomerDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.FullName).HasMaxLength(50);
+
+                entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.HasOne(d => d.SecondStepCustomerForeign)
+                    .WithMany(p => p.OfficeCustomers)
+                    .HasForeignKey(d => d.SecondStepCustomerForeignId)
+                    .HasConstraintName("FK__OfficeCus__Secon__5006DFF2");
+            });
+
+            modelBuilder.Entity<OfficeImg>(entity =>
+            {
+                entity.HasKey(e => e.ImgId)
+                    .HasName("PK__OfficeIm__352F54F3F2F7CCDE");
+
+                entity.ToTable("OfficeImg");
+
+                entity.Property(e => e.ImgPath)
+                    .HasMaxLength(500)
+                    .HasColumnName("imgPath");
+
+                entity.HasOne(d => d.ImgIdForeign)
+                    .WithMany(p => p.OfficeImgs)
+                    .HasForeignKey(d => d.ImgIdForeignId)
+                    .HasConstraintName("FK__OfficeImg__ImgId__4D2A7347");
             });
 
             modelBuilder.Entity<Region>(entity =>
@@ -232,6 +442,10 @@ namespace Model.Contexts
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Family).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Floor).HasMaxLength(50);
@@ -252,9 +466,15 @@ namespace Model.Contexts
 
                 entity.Property(e => e.IsPaidHomeOwnFirstStep).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.Item).HasMaxLength(50);
+
+                entity.Property(e => e.Looking).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Metro).HasMaxLength(50);
 
                 entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Recommend).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Region).HasMaxLength(50);
 
@@ -273,8 +493,6 @@ namespace Model.Contexts
                 entity.Property(e => e.Wifi).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.WorkingBoy).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.İtem).HasMaxLength(50);
             });
 
             modelBuilder.Entity<Room>(entity =>
@@ -295,6 +513,10 @@ namespace Model.Contexts
                 entity.Property(e => e.DirectCustomerDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FullName).HasMaxLength(50);
 
@@ -326,6 +548,10 @@ namespace Model.Contexts
 
                 entity.Property(e => e.Document).HasMaxLength(50);
 
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Floor).HasMaxLength(50);
 
                 entity.Property(e => e.Fullname).HasMaxLength(50);
@@ -340,15 +566,23 @@ namespace Model.Contexts
 
                 entity.Property(e => e.IsPaidHomeOwnFirstStep).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.Item).HasMaxLength(50);
+
+                entity.Property(e => e.Looking).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Metro).HasMaxLength(50);
 
                 entity.Property(e => e.Number).HasMaxLength(30);
+
+                entity.Property(e => e.Recommend).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Region).HasMaxLength(50);
 
                 entity.Property(e => e.Repair).HasMaxLength(50);
 
-                entity.Property(e => e.İtem).HasMaxLength(50);
+                entity.Property(e => e.VideoPath)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<SellImg>(entity =>
@@ -378,6 +612,10 @@ namespace Model.Contexts
                 entity.Property(e => e.DirectCustomerDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.FullName).HasMaxLength(50);
 

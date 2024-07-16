@@ -15,6 +15,5 @@ namespace Business.Abstract
         Task<IResult> Update(T Model);
         Task<IResult> Delete(T Model);
         Task<IDataResult<T>> GetById(int id);
-        Task<IDataResult<List<string>>> GetAll();
     }
 }

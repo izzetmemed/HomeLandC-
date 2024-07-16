@@ -17,7 +17,11 @@ namespace Business.Concrete
 {
     public class RentHomeOperationImg : IRentHomeServiceImg
     {
-        AccessImg AccessImg = new AccessImg();
+        AccessImg AccessImg;
+        public RentHomeOperationImg()
+        {
+            AccessImg = new AccessImg();
+        }
         public async Task<IResult> Add(ImgName Model)
         {
             if (string.IsNullOrWhiteSpace(Model.ImgPath))

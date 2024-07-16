@@ -4,6 +4,7 @@ using Core;
 using DataAccess.AccessingDb.Concrete;
 using DataAccess.AccessingDbRent.Abstract;
 using DataAccess.AccessingDbRent.Concrete;
+using Model.DTOmodels;
 using Model.Models;
 using System;
 using System.Collections.Generic;
@@ -80,9 +81,9 @@ namespace Business.Concrete
             return new SuccessResult(MyMessage.Success);
         }
 
-        public async Task<IDataResult<List<string>>> GetAll()
+        public async Task<IDataResult<List<string>>> GetAll(Expression<Func<Obyekt, bool>>? predicate = null)
         {
-            return new SuccessDataResult<List<string>>(await obyektAccess.GetAll());
+            return new SuccessDataResult<List<string>>(await obyektAccess.GetAll(predicate));
         }
 
         public async Task<IDataResult<List<string>>> GetAllCoordinate()
@@ -90,9 +91,41 @@ namespace Business.Concrete
             return new SuccessDataResult<List<string>>(await obyektAccess.GetAllCoordinate());
         }
 
-        public async Task<IDataResult<List<string>>> GetAllNormal()
+        public async Task<IDataResult<SearchDTO>> GetAllCustomerNumber(string CNumber)
         {
-            return new SuccessDataResult<List<string>>(await obyektAccess.GetAllNormal());
+            var result = await obyektAccess.GetAllNormal(1, x => x.ObyektSecondStepCustomers.Any(y => y.Number == CNumber));
+            return new SuccessDataResult<SearchDTO>(result);
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllId(int id)
+        {
+            return new SuccessDataResult<SearchDTO>(await obyektAccess.GetAllNormal(1, x => x.Id == id));
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllNormal(int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await obyektAccess.GetAllNormal(Page));
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllOwnNumber(string ONumber)
+        {
+            var result = await obyektAccess.GetAllNormal(1, x => x.Number == ONumber);
+            return new SuccessDataResult<SearchDTO>(result);
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllPage(int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await obyektAccess.GetAllPage(Page));
+        }
+
+        public async Task<IDataResult<List<string>>> GetAllRecommend()
+        {
+            return new SuccessDataResult<List<string>>(await obyektAccess.GetAllRecommend());
+        }
+
+        public async Task<IDataResult<SearchDTO>> GetAllSearch(SearchModel searchModel, int Page)
+        {
+            return new SuccessDataResult<SearchDTO>(await obyektAccess.GetAllSearch(searchModel, Page));
         }
 
         public async Task<IDataResult<Obyekt>> GetById(int id)
@@ -108,14 +141,17 @@ namespace Business.Concrete
             {
                 return null;
             }
+            data.Looking = data.Looking + 1;
+            await this.Update(data);
             var needData = new
             {
                 Id = data.Id,
                 Address = data.Address,
                 Room = data.Room,
                 Metro = data.Metro,
+                Looking = data.Looking,
                 Price = data.Price,
-                Item = data.İtem,
+                Item = data.Item,
                 Region = data.Region,
                 Area = data.Area,
                 Date = data.Date,
@@ -127,7 +163,6 @@ namespace Business.Concrete
                 SellorRent = data.SellOrRent,
                 Img = img.Select(x => x.ImgPath).ToList()
             };
-
             return new SuccessDataResult<object>(needData);
         }
 
@@ -146,13 +181,16 @@ namespace Business.Concrete
                 Address = data.Address,
                 Room = data.Room,
                 Metro = data.Metro,
+                Looking = data.Looking,
+                Email = data.Email,
                 Price = data.Price,
-                İtem = data.İtem,
+                Item = data.Item,
                 Region = data.Region,
                 Area = data.Area,
                 Number = data.Number,
                 Date = data.Date,
                 Fullname = data.Fullname,
+                Recommend = data.Recommend,
                 CoordinateX = data.CoordinateX,
                 CoordinateY = data.CoordinateY,
                 Repair = data.Repair,
@@ -170,7 +208,6 @@ namespace Business.Concrete
 
             return new SuccessDataResult<object>(needData);
         }
-
         public async Task<IResult> Update(Obyekt Model)
         {
             obyektAccess.Update(Model);

@@ -1,4 +1,5 @@
 ﻿using Core;
+using Model.DTOmodels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Business.Abstract
 {
     public interface IGenericServiceGetAllNormal
     {
-        Task<IDataResult<List<string>>> GetAllNormal();
+        Task<IDataResult<SearchDTO>> GetAllNormal(int Page);
     }
 }
+ 
